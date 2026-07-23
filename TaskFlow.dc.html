@@ -1,0 +1,893 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="_ds/nocturne-ef4c3fe0-2b4a-4dcc-a3f8-73f6ab09e8ec/styles.css">
+  <script src="_ds/nocturne-ef4c3fe0-2b4a-4dcc-a3f8-73f6ab09e8ec/_ds_bundle.js"></script>
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; }
+    ::-webkit-scrollbar { width: 8px; height: 8px; }
+    ::-webkit-scrollbar-thumb { background: var(--color-neutral-800); border-radius: 8px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    @keyframes tf-fade { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+  </style>
+</helmet>
+
+<div style="display:flex;height:100vh;width:100%;background:var(--color-bg);color:var(--color-text);font-family:var(--font-body);overflow:hidden;">
+
+  <!-- Sidebar -->
+  <aside style="width:264px;flex:none;display:flex;flex-direction:column;background:var(--color-surface);border-right:1px solid var(--color-divider);">
+    <div style="display:flex;align-items:center;gap:10px;padding:18px 18px 14px;">
+      <div style="width:28px;height:28px;border-radius:8px;background:var(--color-accent-700);display:flex;align-items:center;justify-content:center;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--color-accent-100)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12l5 5L20 6"/></svg>
+      </div>
+      <div style="font-family:var(--font-heading);font-weight:600;font-size:16px;">TaskFlow</div>
+    </div>
+
+    <sc-if value="{{ isMemberRole }}" hint-placeholder-val="{{ false }}">
+      <div style="display:flex;align-items:center;gap:9px;padding:8px 10px;margin:0 10px 12px;background:var(--color-bg);border-radius:8px;">
+        <div style="width:26px;height:26px;border-radius:50%;background:var(--color-neutral-700);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;flex:none;">FA</div>
+        <div><div style="font-size:12px;font-weight:600;">Femi Adeyemi</div><div style="font-size:11px;color:color-mix(in srgb, var(--color-text) 55%, transparent);">Member</div></div>
+      </div>
+    </sc-if>
+
+    <div style="padding:2px 20px 6px;font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:color-mix(in srgb, var(--color-text) 50%, transparent);">Overview</div>
+    <div style="display:flex;flex-direction:column;gap:2px;padding:0 10px;">
+      <div onClick="{{ goDashboard }}" style="{{ navStyle.dashboard }}"><div class="tf-navrow" style="display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:8px;cursor:pointer;font-size:13.5px;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V20a1 1 0 001 1h4v-6h4v6h4a1 1 0 001-1V9.5"/></svg><span style="flex:1;">Dashboard</span></div></div>
+      <div onClick="{{ goNotifications }}" style="{{ navStyle.notifications }}"><div style="display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:8px;cursor:pointer;font-size:13.5px;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 1112 0c0 4 1.5 5.5 1.5 5.5H4.5S6 12 6 8z"/><path d="M10 18a2 2 0 004 0"/></svg><span style="flex:1;">Notifications</span><sc-if value="{{ hasUnreadNotifs }}"><span style="width:7px;height:7px;border-radius:50%;background:var(--color-accent);"></span></sc-if></div></div>
+    </div>
+
+    <div style="padding:16px 20px 6px;font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:color-mix(in srgb, var(--color-text) 50%, transparent);">Groups</div>
+    <div style="display:flex;flex-direction:column;gap:2px;padding:0 10px;">
+      <div onClick="{{ goGroup }}" style="{{ navStyle.group }}"><div style="padding:8px 10px;border-radius:8px;cursor:pointer;font-size:13.5px;">Marketing Team</div></div>
+      <sc-if value="{{ isAdminRole }}" hint-placeholder-val="{{ true }}">
+        <div onClick="{{ goGroup }}" style="padding:8px 10px;border-radius:8px;cursor:pointer;font-size:13.5px;color:color-mix(in srgb, var(--color-text) 80%, transparent);">XAUUSD Trading Group</div>
+        <div onClick="{{ goGroup }}" style="padding:8px 10px;border-radius:8px;cursor:pointer;font-size:13.5px;color:color-mix(in srgb, var(--color-text) 80%, transparent);">Family Errands</div>
+      </sc-if>
+    </div>
+
+    <sc-if value="{{ isAdminRole }}" hint-placeholder-val="{{ true }}">
+      <div style="padding:16px 20px 6px;font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:color-mix(in srgb, var(--color-text) 50%, transparent);">Organization</div>
+      <div style="padding:0 10px;">
+        <div onClick="{{ goOrg }}" style="{{ navStyle.org }}"><div style="padding:8px 10px;border-radius:8px;cursor:pointer;font-size:13.5px;">Acme Inc</div></div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ isMemberRole }}" hint-placeholder-val="{{ false }}">
+      <div style="padding:16px 20px 6px;font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:color-mix(in srgb, var(--color-text) 50%, transparent);">Direct messages</div>
+      <div style="display:flex;flex-direction:column;gap:2px;padding:0 10px;">
+        <sc-if value="{{ hasNoDms }}" hint-placeholder-val="{{ false }}">
+          <div style="font-size:11.5px;padding:4px 10px;color:color-mix(in srgb, var(--color-text) 50%, transparent);">Message a member from a group's Members list.</div>
+        </sc-if>
+        <sc-for list="{{ dmSidebar }}" as="d" hint-placeholder-count="3">
+          <div onClick="{{ d.open }}" style="{{ d.navStyle }}"><div style="display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:8px;cursor:pointer;font-size:13px;"><span style="flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ d.name }}</span><sc-if value="{{ d.hasUnread }}"><span style="background:var(--color-accent);color:var(--color-bg);font-size:10px;font-weight:600;min-width:17px;height:17px;border-radius:9px;display:flex;align-items:center;justify-content:center;padding:0 5px;">{{ d.unread }}</span></sc-if></div></div>
+        </sc-for>
+        <sc-if value="{{ hasMoreDms }}" hint-placeholder-val="{{ false }}">
+          <div onClick="{{ goDmInbox }}" style="padding:8px 10px;border-radius:8px;cursor:pointer;font-size:13px;color:var(--color-accent-300);">See all messages</div>
+        </sc-if>
+      </div>
+    </sc-if>
+
+    <div style="padding:16px 20px 6px;font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:color-mix(in srgb, var(--color-text) 50%, transparent);">Account</div>
+    <div style="padding:0 10px;">
+      <div onClick="{{ goSettings }}" style="{{ navStyle.settings }}"><div style="padding:8px 10px;border-radius:8px;cursor:pointer;font-size:13.5px;">Settings</div></div>
+    </div>
+
+    <div style="flex:1;"></div>
+    <div style="padding:12px 16px 16px;border-top:1px solid var(--color-divider);">
+      <div style="font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:color-mix(in srgb, var(--color-text) 45%, transparent);margin-bottom:6px;">Viewing as</div>
+      <div style="display:inline-flex;border:1px solid var(--color-divider);border-radius:8px;overflow:hidden;">
+        <div onClick="{{ setRoleAdmin }}" style="{{ roleBtnStyle.admin }}"><div style="padding:6px 12px;font-size:12px;cursor:pointer;">Admin</div></div>
+        <div onClick="{{ setRoleMember }}" style="{{ roleBtnStyle.member }}"><div style="padding:6px 12px;font-size:12px;cursor:pointer;border-left:1px solid var(--color-divider);">Femi (Member)</div></div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <main style="flex:1;overflow-y:auto;min-width:0;">
+
+    <!-- Dashboard -->
+    <sc-if value="{{ isDashboard }}" hint-placeholder-val="{{ true }}">
+      <div style="padding:32px 40px 40px;animation:tf-fade .2s ease;max-width:1100px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+          <h2 style="margin:0;">Your groups</h2>
+          <sc-if value="{{ isAdminRole }}" hint-placeholder-val="{{ true }}"><button class="btn btn-primary" onClick="{{ goGroup }}">New group</button></sc-if>
+        </div>
+        <div style="font-size:13px;color:color-mix(in srgb, var(--color-text) 55%, transparent);margin-bottom:22px;">{{ dashSubtitle }}</div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:16px;margin-bottom:32px;">
+          <sc-for list="{{ dashGroups }}" as="g" hint-placeholder-count="3">
+            <div class="card elev-sm" onClick="{{ goGroup }}" style="cursor:pointer;transition:transform .15s ease, box-shadow .15s ease;" style-hover="{ transform: 'translateY(-3px)', boxShadow: 'var(--shadow-md)' }">
+              <div class="card-title">{{ g.name }}</div>
+              <span class="{{ g.roleClass }}" style="width:fit-content;">{{ g.role }}</span>
+              <div class="card-meta">{{ g.members }} members · {{ g.projects }} projects</div>
+            </div>
+          </sc-for>
+        </div>
+        <div style="display:grid;grid-template-columns:1.3fr 1fr;gap:28px;align-items:start;">
+          <div>
+            <h3 style="margin:0 0 12px;">Assigned to you</h3>
+            <div style="display:flex;flex-direction:column;gap:10px;">
+              <sc-for list="{{ assignedToYou }}" as="a" hint-placeholder-count="2">
+                <div class="card elev-sm" onClick="{{ a.open }}" style="cursor:pointer;flex-direction:row;align-items:center;justify-content:space-between;" style-hover="{ boxShadow: 'var(--shadow-md)' }">
+                  <div><div class="card-title" style="font-size:14.5px;">{{ a.title }}</div><div class="card-meta" style="margin-top:2px;">{{ a.sub }}</div></div>
+                  <span class="tag tag-outline">{{ a.due }}</span>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+          <div>
+            <h3 style="margin:0 0 12px;">Recent activity</h3>
+            <div class="card elev-sm" style="gap:0;">
+              <sc-for list="{{ recentActivity }}" as="n" hint-placeholder-count="4">
+                <div style="display:flex;justify-content:space-between;gap:10px;padding:10px 0;border-bottom:1px solid var(--color-divider);">
+                  <span style="font-size:13px;">{{ n.text }}</span>
+                  <span style="font-size:11.5px;color:color-mix(in srgb, var(--color-text) 45%, transparent);white-space:nowrap;">{{ n.time }}</span>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+
+    <!-- Group -->
+    <sc-if value="{{ isGroup }}" hint-placeholder-val="{{ false }}">
+      <div style="padding:24px 40px 0;animation:tf-fade .2s ease;">
+        <div onClick="{{ goDashboard }}" style="display:inline-flex;align-items:center;gap:6px;color:var(--color-accent-300);font-size:13px;cursor:pointer;margin-bottom:14px;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg> Dashboard
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:2px;">
+          <h2 style="margin:0;">Marketing Team</h2>
+          <sc-if value="{{ isAdminRole }}" hint-placeholder-val="{{ true }}"><button class="btn btn-primary" onClick="{{ goInvite }}">Invite people</button></sc-if>
+        </div>
+        <div style="font-size:13px;color:color-mix(in srgb, var(--color-text) 55%, transparent);margin-bottom:18px;">{{ groupSubtitle }}</div>
+        <div style="display:inline-flex;border:1px solid var(--color-divider);border-radius:8px;overflow:hidden;margin-bottom:22px;">
+          <div onClick="{{ selectProjectsTab }}" style="{{ tabStyle.projects }}"><div style="padding:8px 16px;font-size:13px;cursor:pointer;">Projects</div></div>
+          <div onClick="{{ selectChatTab }}" style="{{ tabStyle.chat }}"><div style="padding:8px 16px;font-size:13px;cursor:pointer;border-left:1px solid var(--color-divider);">Chat</div></div>
+          <div onClick="{{ selectMembersTab }}" style="{{ tabStyle.members }}"><div style="padding:8px 16px;font-size:13px;cursor:pointer;border-left:1px solid var(--color-divider);">Members</div></div>
+        </div>
+      </div>
+
+      <sc-if value="{{ isProjectsTab }}" hint-placeholder-val="{{ true }}">
+        <div style="padding:0 40px 40px;display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:16px;">
+          <sc-for list="{{ projects }}" as="p" hint-placeholder-count="3">
+            <div class="card elev-sm" onClick="{{ openProject }}" style="cursor:pointer;transition:transform .15s ease, box-shadow .15s ease;" style-hover="{ transform: 'translateY(-3px)', boxShadow: 'var(--shadow-md)' }">
+              <div style="display:flex;justify-content:space-between;gap:8px;"><div class="card-title">{{ p.name }}</div><span class="{{ p.statusClass }}" style="width:fit-content;flex:none;">{{ p.status }}</span></div>
+              <div class="card-body">{{ p.desc }}</div>
+              <div class="card-meta">{{ p.done }} of {{ p.total }} tasks done</div>
+            </div>
+          </sc-for>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isChatTab }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;gap:24px;padding:0 40px 24px;height:calc(100vh - 260px);">
+          <div style="width:200px;flex:none;">
+            <div style="font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:color-mix(in srgb, var(--color-text) 50%, transparent);margin-bottom:10px;">Members ({{ memberCount }})</div>
+            <sc-for list="{{ chatMemberList }}" as="m" hint-placeholder-count="5">
+              <div onClick="{{ m.open }}" style="display:flex;align-items:center;gap:9px;padding:6px 4px;cursor:pointer;">
+                <div style="width:24px;height:24px;border-radius:50%;background:var(--color-neutral-700);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;flex:none;">{{ m.letter }}</div>
+                <span style="font-size:13px;">{{ m.name }}</span>
+              </div>
+            </sc-for>
+          </div>
+          <div style="flex:1;display:flex;flex-direction:column;min-width:0;">
+            <div style="flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:10px;padding:6px 0;">
+              <sc-for list="{{ groupMessages }}" as="m" hint-placeholder-count="4">
+                <sc-if value="{{ m.isSystem }}" hint-placeholder-val="{{ false }}">
+                  <div style="text-align:center;font-size:12px;color:color-mix(in srgb, var(--color-text) 45%, transparent);">{{ m.text }}</div>
+                </sc-if>
+                <sc-if value="{{ m.isSystem }}" hint-placeholder-val="{{ false }}">
+                </sc-if>
+                <div style="display:{{ m.showBubble }};flex-direction:column;align-items:{{ m.align }};max-width:58%;{{ m.selfAlign }}">
+                  <div onClick="{{ m.openSender }}" style="font-size:11px;color:color-mix(in srgb, var(--color-text) 55%, transparent);margin-bottom:3px;padding:0 2px;cursor:{{ m.cursor }};">{{ m.from }} · {{ m.time }}</div>
+                  <div style="padding:9px 13px;border-radius:14px;font-size:14px;line-height:1.4;background:{{ m.bg }};color:{{ m.color }};">{{ m.text }}</div>
+                </div>
+              </sc-for>
+            </div>
+            <div style="display:flex;gap:8px;margin-top:10px;">
+              <input class="input" placeholder="Message Marketing Team…" value="{{ composer }}" onChange="{{ setComposer }}" onKeyDown="{{ onComposerKeyDown }}" style="flex:1;" />
+              <button class="btn btn-primary btn-icon" onClick="{{ sendComposer }}"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M3 11l18-8-8 18-2.5-7L3 11z"/></svg></button>
+            </div>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isMembersTab }}" hint-placeholder-val="{{ false }}">
+        <div style="padding:0 40px 40px;">
+          <table class="table">
+            <thead><tr><th>Name</th><th>Role</th><th></th></tr></thead>
+            <tbody>
+              <sc-for list="{{ memberRows }}" as="m" hint-placeholder-count="5">
+                <tr>
+                  <td style="display:flex;align-items:center;gap:10px;">
+                    <div style="width:28px;height:28px;border-radius:50%;background:var(--color-neutral-700);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;flex:none;">{{ m.letter }}</div>
+                    <div><div>{{ m.name }}</div><div style="font-size:11.5px;color:color-mix(in srgb, var(--color-text) 50%, transparent);">{{ m.email }}</div></div>
+                  </td>
+                  <td><span class="{{ m.roleClass }}">{{ m.role }}</span></td>
+                  <td style="text-align:right;">
+                    <sc-if value="{{ m.showAdminActions }}" hint-placeholder-val="{{ false }}">
+                      <div style="display:flex;gap:6px;justify-content:flex-end;">
+                        <button class="btn btn-secondary" style="padding:4px 10px;font-size:12px;">{{ m.adminActionLabel }}</button>
+                        <button class="btn btn-secondary" style="padding:4px 10px;font-size:12px;color:var(--color-accent-300);">Remove</button>
+                      </div>
+                    </sc-if>
+                    <sc-if value="{{ m.showMessageAction }}" hint-placeholder-val="{{ false }}">
+                      <button class="btn btn-secondary" style="padding:4px 10px;font-size:12px;" onClick="{{ m.open }}">Message</button>
+                    </sc-if>
+                  </td>
+                </tr>
+              </sc-for>
+            </tbody>
+          </table>
+          <sc-if value="{{ isMemberRole }}" hint-placeholder-val="{{ false }}">
+            <div style="font-size:12.5px;color:color-mix(in srgb, var(--color-text) 50%, transparent);margin-top:12px;">Only admins can manage members.</div>
+          </sc-if>
+        </div>
+      </sc-if>
+    </sc-if>
+
+    <!-- Invite (admin only) -->
+    <sc-if value="{{ isInvite }}" hint-placeholder-val="{{ false }}">
+      <div style="padding:24px 40px 40px;animation:tf-fade .2s ease;">
+        <div onClick="{{ goGroup }}" style="display:inline-flex;align-items:center;gap:6px;color:var(--color-accent-300);font-size:13px;cursor:pointer;margin-bottom:20px;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg> Marketing Team
+        </div>
+        <div class="card elev-sm" style="max-width:440px;">
+          <div class="card-title">Invite people</div>
+          <div class="card-body">Anyone with this link can join as a member.</div>
+          <div style="display:flex;gap:8px;"><input class="input" readonly value="taskflow.app/invite/8f2a1c" /><button class="btn btn-primary">Copy</button></div>
+          <div class="card-meta">Expires in 7 days</div>
+        </div>
+      </div>
+    </sc-if>
+
+    <!-- Kanban -->
+    <sc-if value="{{ isKanban }}" hint-placeholder-val="{{ false }}">
+      <div style="padding:24px 40px 40px;animation:tf-fade .2s ease;display:flex;flex-direction:column;height:100%;">
+        <div onClick="{{ backToGroup }}" style="display:inline-flex;align-items:center;gap:6px;color:var(--color-accent-300);font-size:13px;cursor:pointer;margin-bottom:14px;width:fit-content;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg> Marketing Team
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
+          <h2 style="margin:0;">Q3 Campaign Launch</h2>
+          <sc-if value="{{ isAdminRole }}" hint-placeholder-val="{{ true }}"><button class="btn btn-primary" onClick="{{ goNewTask }}">New task</button></sc-if>
+        </div>
+        <div style="font-size:13px;color:color-mix(in srgb, var(--color-text) 55%, transparent);margin-bottom:8px;">Full-funnel campaign for the Q3 product push across paid social, email, and landing pages.</div>
+        <sc-if value="{{ isMemberRole }}" hint-placeholder-val="{{ false }}">
+          <div style="font-size:12.5px;color:color-mix(in srgb, var(--color-text) 50%, transparent);margin-bottom:16px;">Only admins can create new tasks.</div>
+        </sc-if>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;flex:1;min-height:0;margin-top:8px;">
+          <div style="display:flex;flex-direction:column;gap:10px;min-height:0;">
+            <div style="font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:color-mix(in srgb, var(--color-text) 55%, transparent);">To do · {{ todoCount }}</div>
+            <div style="display:flex;flex-direction:column;gap:10px;overflow-y:auto;">
+              <sc-for list="{{ todoTasks }}" as="t" hint-placeholder-count="2">
+                <div class="card elev-sm" onClick="{{ t.open }}" style="cursor:pointer;transition:transform .15s ease;" style-hover="{ transform: 'translateY(-2px)' }">
+                  <div style="display:flex;justify-content:space-between;gap:6px;"><div class="card-title" style="font-size:14.5px;">{{ t.title }}</div><sc-if value="{{ t.mine }}"><span class="tag tag-accent" style="flex:none;">Yours</span></sc-if></div>
+                  <div class="card-meta">{{ t.assignee }} · <span class="{{ t.priorityClass }}">{{ t.priority }}</span></div>
+                  <div class="card-meta" style="gap:8px;"><span style="{{ t.dueBadgeStyle }}">{{ t.dueLabel }}</span>{{ t.msgCount }}</div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:10px;min-height:0;">
+            <div style="font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:color-mix(in srgb, var(--color-text) 55%, transparent);">In progress · {{ inprogressCount }}</div>
+            <div style="display:flex;flex-direction:column;gap:10px;overflow-y:auto;">
+              <sc-for list="{{ inprogressTasks }}" as="t" hint-placeholder-count="1">
+                <div class="card elev-sm" onClick="{{ t.open }}" style="cursor:pointer;transition:transform .15s ease;" style-hover="{ transform: 'translateY(-2px)' }">
+                  <div style="display:flex;justify-content:space-between;gap:6px;"><div class="card-title" style="font-size:14.5px;">{{ t.title }}</div><sc-if value="{{ t.mine }}"><span class="tag tag-accent" style="flex:none;">Yours</span></sc-if></div>
+                  <div class="card-meta">{{ t.assignee }} · <span class="{{ t.priorityClass }}">{{ t.priority }}</span></div>
+                  <div class="card-meta" style="gap:8px;"><span style="{{ t.dueBadgeStyle }}">{{ t.dueLabel }}</span>{{ t.msgCount }}</div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:10px;min-height:0;">
+            <div style="font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:color-mix(in srgb, var(--color-text) 55%, transparent);">Done · {{ doneCount }}</div>
+            <div style="display:flex;flex-direction:column;gap:10px;overflow-y:auto;">
+              <sc-for list="{{ doneTasks }}" as="t" hint-placeholder-count="1">
+                <div class="card elev-sm" onClick="{{ t.open }}" style="cursor:pointer;opacity:.85;transition:transform .15s ease, opacity .15s ease;" style-hover="{ transform: 'translateY(-2px)', opacity: 1 }">
+                  <div class="card-title" style="font-size:14.5px;">{{ t.title }}</div>
+                  <div class="card-meta">{{ t.assignee }} · <span class="{{ t.priorityClass }}">{{ t.priority }}</span></div>
+                  <div class="card-meta" style="gap:8px;"><span style="{{ t.dueBadgeStyle }}">{{ t.dueLabel }}</span></div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+
+    <!-- New task (admin only) -->
+    <sc-if value="{{ isNewTask }}" hint-placeholder-val="{{ false }}">
+      <div style="padding:24px 40px 40px;animation:tf-fade .2s ease;">
+        <div onClick="{{ backToGroup }}" style="display:inline-flex;align-items:center;gap:6px;color:var(--color-accent-300);font-size:13px;cursor:pointer;margin-bottom:18px;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg> Q3 Campaign Launch
+        </div>
+        <h2 style="margin:0 0 18px;">New task</h2>
+        <div class="card elev-sm" style="max-width:480px;">
+          <div class="field"><label>Title</label><input class="input" placeholder="e.g. Finalize email subject lines" /></div>
+          <div class="field"><label>Description</label><textarea class="input" rows="4" placeholder="What needs to happen?"></textarea></div>
+          <div class="field"><label>Assignee</label>
+            <select class="input"><sc-for list="{{ allMemberNames }}" as="n" hint-placeholder-count="5"><option>{{ n }}</option></sc-for></select>
+          </div>
+          <div class="field"><label>Priority</label><select class="input"><option>Low</option><option selected="">Medium</option><option>High</option></select></div>
+          <div class="field"><label>Due date</label><input class="input" type="date" /></div>
+          <button class="btn btn-primary btn-block" onClick="{{ backToGroup }}">Create task</button>
+        </div>
+      </div>
+    </sc-if>
+
+    <!-- Task detail: admin layout -->
+    <sc-if value="{{ isTaskAdmin }}" hint-placeholder-val="{{ false }}">
+      <div style="padding:24px 40px 40px;animation:tf-fade .2s ease;">
+        <div onClick="{{ backToKanban }}" style="display:inline-flex;align-items:center;gap:6px;color:var(--color-accent-300);font-size:13px;cursor:pointer;margin-bottom:14px;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg> Q3 Campaign Launch
+        </div>
+        <div style="display:grid;grid-template-columns:1.3fr 1fr;gap:24px;align-items:start;">
+          <div class="card elev-sm">
+            <div style="display:flex;justify-content:space-between;gap:10px;"><h3 style="margin:0;">{{ task.title }}</h3><div style="display:flex;gap:6px;flex:none;"><span class="{{ task.priorityClass }}">{{ task.priority }}</span><sc-if value="{{ task.isDone }}" hint-placeholder-val="{{ false }}"><span style="background:oklch(28% 0.07 145);color:oklch(86% 0.05 145);font-size:11px;padding:3px 9px;border-radius:6px;">Done</span></sc-if></div></div>
+            <div style="font-size:13.5px;line-height:1.6;opacity:.85;">{{ task.desc }}</div>
+            <div style="margin-top:14px;"><div style="font-size:12px;color:color-mix(in srgb, var(--color-text) 60%, transparent);margin-bottom:4px;">Assignee</div><div style="font-size:14px;">{{ task.assignee }}</div></div>
+            <div style="margin-top:12px;"><div style="font-size:12px;color:color-mix(in srgb, var(--color-text) 60%, transparent);margin-bottom:4px;">Due date</div><div style="font-size:14px;{{ task.dueStyleCss }}">{{ task.due }}</div></div>
+            <div class="field"><label>Status</label><select class="input"><option>To do</option><option>In progress</option><option selected="">Done</option></select></div>
+            <div style="display:flex;gap:8px;margin-top:4px;">
+              <button class="btn btn-primary">Save changes</button>
+              <button class="btn btn-secondary" style="color:var(--color-accent-300);">Delete task</button>
+            </div>
+          </div>
+          <div class="card elev-sm">
+            <div class="card-title">Comments</div>
+            <div style="display:flex;flex-direction:column;gap:10px;">
+              <sc-if value="{{ task.noComments }}" hint-placeholder-val="{{ false }}"><div class="card-body">No comments yet.</div></sc-if>
+              <sc-for list="{{ task.comments }}" as="c" hint-placeholder-count="2">
+                <div style="display:flex;gap:9px;">
+                  <div style="width:24px;height:24px;border-radius:50%;background:var(--color-neutral-700);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;flex:none;">{{ c.letter }}</div>
+                  <div><div style="font-size:13px;"><strong style="font-weight:600;">{{ c.name }}</strong> <span style="font-size:11px;color:color-mix(in srgb, var(--color-text) 50%, transparent);">{{ c.time }}</span></div><div style="font-size:13px;margin-top:2px;">{{ c.text }}</div></div>
+                </div>
+              </sc-for>
+            </div>
+            <div style="display:flex;gap:8px;margin-top:4px;"><input class="input" placeholder="Write a comment…" value="{{ composer }}" onChange="{{ setComposer }}" onKeyDown="{{ onComposerKeyDown }}" /><button class="btn btn-primary" onClick="{{ sendComposer }}">Post</button></div>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+
+    <!-- Task detail: member layout -->
+    <sc-if value="{{ isTaskMember }}" hint-placeholder-val="{{ false }}">
+      <div style="padding:24px 40px 40px;animation:tf-fade .2s ease;">
+        <div onClick="{{ backToKanban }}" style="display:inline-flex;align-items:center;gap:6px;color:var(--color-accent-300);font-size:13px;cursor:pointer;margin-bottom:14px;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg> Q3 Campaign Launch
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:18px;"><h3 style="margin:0;">{{ task.title }}</h3><span class="{{ task.priorityClass }}">{{ task.priority }}</span><sc-if value="{{ task.isDone }}" hint-placeholder-val="{{ false }}"><span style="background:oklch(28% 0.07 145);color:oklch(86% 0.05 145);font-size:11px;padding:3px 9px;border-radius:6px;">Done</span></sc-if></div>
+        <div style="display:grid;grid-template-columns:1fr 1.3fr;gap:20px;align-items:start;">
+          <div style="display:flex;flex-direction:column;gap:16px;">
+            <div class="card elev-sm">
+              <div><div style="font-size:12px;color:color-mix(in srgb, var(--color-text) 60%, transparent);margin-bottom:4px;">Assignee</div><div style="font-size:14px;">{{ task.assignee }}</div></div>
+              <div><div style="font-size:12px;color:color-mix(in srgb, var(--color-text) 60%, transparent);margin-bottom:4px;">Assigned by</div><div style="font-size:14px;">{{ task.assigner }}</div></div>
+              <div><div style="font-size:12px;color:color-mix(in srgb, var(--color-text) 60%, transparent);margin-bottom:4px;">Due date</div><div style="font-size:14px;{{ task.dueStyleCss }}">{{ task.due }}</div></div>
+              <sc-if value="{{ task.mine }}" hint-placeholder-val="{{ false }}">
+                <div class="field"><label>Status</label><select class="input"><option selected="">To do</option><option>In progress</option><option>Done</option></select></div>
+                <button class="btn btn-primary btn-block">Update status</button>
+              </sc-if>
+              <sc-if value="{{ task.notMine }}" hint-placeholder-val="{{ true }}">
+                <div><div style="font-size:12px;color:color-mix(in srgb, var(--color-text) 60%, transparent);margin-bottom:4px;">Status</div><div style="font-size:14px;">To do</div></div>
+                <div style="font-size:12px;color:color-mix(in srgb, var(--color-text) 50%, transparent);margin-top:8px;">Only the assignee or an admin can update this task.</div>
+              </sc-if>
+            </div>
+            <div class="card elev-sm">
+              <div class="card-title" style="font-size:14px;">Description</div>
+              <div style="font-size:13px;line-height:1.65;opacity:.8;">{{ task.desc }}</div>
+            </div>
+          </div>
+          <div class="card elev-sm" style="height:500px;">
+            <sc-if value="{{ task.involved }}" hint-placeholder-val="{{ true }}">
+              <div style="border-bottom:1px solid var(--color-divider);padding-bottom:12px;">
+                <div class="card-title">Chat with {{ task.otherParty }}</div>
+                <div class="card-meta">Private to the assignee and assigner on this task.</div>
+              </div>
+              <div style="flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:10px;">
+                <sc-if value="{{ task.noMessages }}" hint-placeholder-val="{{ false }}"><div class="card-body">No messages yet. Say hello.</div></sc-if>
+                <sc-for list="{{ task.messages }}" as="m" hint-placeholder-count="2">
+                  <div style="display:flex;flex-direction:column;align-items:{{ m.align }};max-width:75%;{{ m.selfAlign }}">
+                    <div style="font-size:11px;color:color-mix(in srgb, var(--color-text) 55%, transparent);margin-bottom:3px;padding:0 2px;">{{ m.from }} · {{ m.time }}</div>
+                    <div style="padding:8px 12px;border-radius:12px;font-size:13.5px;line-height:1.4;background:{{ m.bg }};color:{{ m.color }};">{{ m.text }}</div>
+                  </div>
+                </sc-for>
+              </div>
+              <div style="display:flex;gap:8px;"><input class="input" placeholder="Message {{ task.otherParty }}…" value="{{ composer }}" onChange="{{ setComposer }}" onKeyDown="{{ onComposerKeyDown }}" /><button class="btn btn-primary btn-icon" onClick="{{ sendComposer }}"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M3 11l18-8-8 18-2.5-7L3 11z"/></svg></button></div>
+            </sc-if>
+            <sc-if value="{{ task.notInvolved }}" hint-placeholder-val="{{ false }}">
+              <div class="card-title">Task chat</div>
+              <div class="card-body">Only the assignee and the person who assigned this task can chat here.</div>
+            </sc-if>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+
+    <!-- Org (admin only) -->
+    <sc-if value="{{ isOrg }}" hint-placeholder-val="{{ false }}">
+      <div style="padding:32px 40px 40px;animation:tf-fade .2s ease;max-width:1100px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;"><h2 style="margin:0;">Acme Inc</h2><button class="btn btn-primary">New group</button></div>
+        <div style="font-size:13px;color:color-mix(in srgb, var(--color-text) 55%, transparent);margin-bottom:22px;">Organization account · you are owner · admin on all groups</div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:16px;">
+          <sc-for list="{{ orgGroups }}" as="g" hint-placeholder-count="3">
+            <div class="card elev-sm" onClick="{{ goGroup }}" style="cursor:pointer;transition:transform .15s ease, box-shadow .15s ease;" style-hover="{ transform: 'translateY(-3px)', boxShadow: 'var(--shadow-md)' }">
+              <div style="display:flex;justify-content:space-between;gap:8px;"><div class="card-title">{{ g.name }}</div><span class="tag tag-accent" style="flex:none;">Admin access</span></div>
+              <div class="card-meta">{{ g.members }} members · {{ g.projects }} projects</div>
+              <div class="card-meta">Group admin: {{ g.admin }}</div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </sc-if>
+
+    <!-- Notifications -->
+    <sc-if value="{{ isNotifications }}" hint-placeholder-val="{{ false }}">
+      <div style="padding:32px 40px 40px;animation:tf-fade .2s ease;max-width:700px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;"><h2 style="margin:0;">Notifications</h2><button class="btn btn-secondary" style="padding:5px 12px;font-size:12px;">Mark all read</button></div>
+        <div class="card elev-sm" style="gap:0;">
+          <sc-for list="{{ notifications }}" as="n" hint-placeholder-count="4">
+            <div style="display:flex;gap:10px;padding:12px 0;border-bottom:1px solid var(--color-divider);align-items:flex-start;">
+              <div style="width:8px;padding-top:6px;flex:none;"><sc-if value="{{ n.unread }}"><span style="display:block;width:7px;height:7px;border-radius:50%;background:var(--color-accent);"></span></sc-if></div>
+              <div style="flex:1;"><div style="font-size:13px;font-weight:{{ n.weight }};">{{ n.text }}</div><sc-if value="{{ n.hasDesc }}"><div style="font-size:12px;color:color-mix(in srgb, var(--color-text) 55%, transparent);margin-top:4px;line-height:1.4;">{{ n.desc }}</div></sc-if></div>
+              <span style="font-size:11.5px;color:color-mix(in srgb, var(--color-text) 45%, transparent);white-space:nowrap;">{{ n.time }}</span>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </sc-if>
+
+    <!-- Settings -->
+    <sc-if value="{{ isSettings }}" hint-placeholder-val="{{ false }}">
+      <div style="padding:32px 40px 40px;animation:tf-fade .2s ease;max-width:800px;">
+        <h2 style="margin:0 0 20px;">Settings</h2>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:20px;">
+          <div class="card elev-sm">
+            <div class="card-title">Profile</div>
+            <div class="field"><label>Name</label><input class="input" value="{{ settingsName }}" readonly="" /></div>
+            <div class="field"><label>Email</label><input class="input" value="{{ settingsEmail }}" readonly="" /></div>
+            <div class="field"><label>Account type</label><input class="input" readonly value="{{ settingsAccountType }}" /></div>
+            <button class="btn btn-primary" style="margin-top:4px;width:fit-content;">Save</button>
+          </div>
+          <div class="card elev-sm">
+            <div class="card-title">Email notifications</div>
+            <sc-for list="{{ notifPrefs }}" as="pref" hint-placeholder-count="4">
+              <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--color-divider);">
+                <span style="font-size:13px;">{{ pref.label }}</span>
+                <input type="checkbox" checked="{{ pref.checked }}" style="width:auto;accent-color:var(--color-accent);" />
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+
+    <!-- DM inbox (member) -->
+    <sc-if value="{{ isDmInbox }}" hint-placeholder-val="{{ false }}">
+      <div style="padding:32px 40px;animation:tf-fade .2s ease;">
+        <h2 style="margin:0 0 20px;">Messages</h2>
+        <div style="border-radius:8px;overflow:hidden;background:var(--color-surface);">
+          <sc-for list="{{ dmList }}" as="d" hint-placeholder-count="4">
+            <div onClick="{{ d.openFromInbox }}" style="display:flex;align-items:center;gap:14px;padding:14px 18px;border-bottom:1px solid var(--color-divider);cursor:pointer;transition:background .12s ease;" style-hover="{ background: 'color-mix(in srgb, var(--color-text) 5%, transparent)' }">
+              <div style="width:42px;height:42px;border-radius:50%;background:var(--color-neutral-700);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;flex:none;">{{ d.letter }}</div>
+              <div style="flex:1;min-width:0;">
+                <div style="font-size:14.5px;font-weight:{{ d.nameWeight }};">{{ d.name }}</div>
+                <div style="font-size:13px;color:{{ d.previewColor }};white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ d.preview }}</div>
+              </div>
+              <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;">
+                <div style="font-size:11.5px;color:color-mix(in srgb, var(--color-text) 45%, transparent);">{{ d.time }}</div>
+                <sc-if value="{{ d.hasUnread }}"><span style="background:var(--color-accent);color:var(--color-bg);font-size:10px;font-weight:600;min-width:18px;height:18px;border-radius:9px;display:flex;align-items:center;justify-content:center;padding:0 5px;">{{ d.unread }}</span></sc-if>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </sc-if>
+
+    <!-- DM chat (member) -->
+    <sc-if value="{{ isDm }}" hint-placeholder-val="{{ false }}">
+      <div style="display:flex;flex-direction:column;height:100%;padding:24px 40px;animation:tf-fade .2s ease;min-height:0;">
+        <div onClick="{{ dmBack }}" style="display:inline-flex;align-items:center;gap:6px;color:var(--color-accent-300);font-size:13px;cursor:pointer;margin-bottom:14px;width:fit-content;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg> {{ dmBackLabel }}
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:18px;">
+          <div style="width:32px;height:32px;border-radius:50%;background:var(--color-neutral-700);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;">{{ dm.letter }}</div>
+          <div><div style="font-family:var(--font-heading);font-weight:600;font-size:15px;">{{ dm.name }}</div><div style="font-size:11.5px;color:color-mix(in srgb, var(--color-text) 50%, transparent);">Private conversation</div></div>
+        </div>
+        <div style="flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:10px;">
+          <sc-for list="{{ dm.messages }}" as="m" hint-placeholder-count="3">
+            <div style="display:flex;flex-direction:column;align-items:{{ m.align }};max-width:55%;{{ m.selfAlign }}">
+              <div style="font-size:11px;color:color-mix(in srgb, var(--color-text) 55%, transparent);margin-bottom:3px;padding:0 2px;">{{ m.time }}</div>
+              <div style="padding:9px 13px;border-radius:14px;font-size:14px;line-height:1.4;background:{{ m.bg }};color:{{ m.color }};">{{ m.text }}</div>
+              <sc-if value="{{ m.showReceipt }}" hint-placeholder-val="{{ false }}"><div style="font-size:11px;color:color-mix(in srgb, var(--color-text) 45%, transparent);margin-top:2px;padding:0 2px;">{{ m.receipt }}</div></sc-if>
+            </div>
+          </sc-for>
+        </div>
+        <div style="display:flex;gap:8px;margin-top:12px;">
+          <input class="input" placeholder="Message {{ dm.name }}…" value="{{ composer }}" onChange="{{ setComposer }}" onKeyDown="{{ onComposerKeyDown }}" style="flex:1;" />
+          <button class="btn btn-primary btn-icon" onClick="{{ sendComposer }}"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M3 11l18-8-8 18-2.5-7L3 11z"/></svg></button>
+        </div>
+      </div>
+    </sc-if>
+
+  </main>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+function tagPriority(p) { return p === 'High' ? 'tag tag-outline' : p === 'Medium' ? 'tag tag-accent-2' : 'tag tag-neutral'; }
+function tagStatus(s) { return s === 'Active' ? 'tag tag-accent' : 'tag tag-neutral'; }
+function tagRole(r) { return r === 'Admin' ? 'tag tag-accent' : 'tag tag-neutral'; }
+
+const DANGER = { bg: 'oklch(30% 0.09 25)', fg: 'oklch(88% 0.05 25)', solid: 'oklch(70% 0.15 25)' };
+const SUCCESS = { bg: 'oklch(28% 0.07 145)', fg: 'oklch(86% 0.05 145)', solid: 'oklch(68% 0.13 145)' };
+const NEUTRAL_TAG = { bg: 'var(--color-neutral-800)', fg: 'var(--color-neutral-300)' };
+const URGENT_DUES = ['Jul 22', 'Jul 24'];
+function dueBadge(due, col) {
+  if (col === 'done') return { style: { background: SUCCESS.bg, color: SUCCESS.fg, borderRadius: '6px', padding: '2px 8px', fontSize: '11px' }, label: 'Done' };
+  const urgent = URGENT_DUES.includes(due);
+  return { style: { background: urgent ? DANGER.bg : NEUTRAL_TAG.bg, color: urgent ? DANGER.fg : NEUTRAL_TAG.fg, borderRadius: '6px', padding: '2px 8px', fontSize: '11px' }, label: 'Due ' + due };
+}
+function dueValueColor(due, col) {
+  if (col === 'done') return { color: SUCCESS.solid };
+  if (URGENT_DUES.includes(due)) return { color: DANGER.solid };
+  return {};
+}
+
+const PROJECTS = [
+  { name: 'Q3 Campaign Launch', status: 'Active', done: 6, total: 10, desc: 'Full-funnel campaign for the Q3 product push across paid social, email, and landing pages.' },
+  { name: 'Website Redesign', status: 'Active', done: 2, total: 8, desc: 'Refresh the marketing site with the new brand system and improved conversion flow.' },
+  { name: 'Newsletter Revamp', status: 'Completed', done: 5, total: 5, desc: 'Redesigned monthly newsletter template and content structure.' },
+];
+
+function seedAdmin() {
+  return {
+    members: [
+      { name: 'You', email: 'you@acme.com', role: 'Admin', letter: 'YO', isMe: true },
+      { name: 'Amara Okafor', email: 'amara@acme.com', role: 'Admin', letter: 'AO' },
+      { name: 'Femi Adeyemi', email: 'femi@acme.com', role: 'Member', letter: 'FA' },
+      { name: 'Chidi Nwosu', email: 'chidi@acme.com', role: 'Member', letter: 'CN' },
+      { name: 'Zainab Bello', email: 'zainab@acme.com', role: 'Member', letter: 'ZB' },
+      { name: 'Tunde Lawal', email: 'tunde@acme.com', role: 'Member', letter: 'TL' },
+    ],
+    tasks: {
+      todo: [
+        { title: 'Draft social copy', assignee: 'Amara Okafor', priority: 'High', due: 'Jul 24',
+          desc: 'Write copy for Instagram and X launch posts, 3 variations each. Match the tone from the brand guide — upbeat, direct, no jargon.',
+          comments: [
+            { name: 'Amara Okafor', letter: 'AO', text: 'Starting on this today, will have a first draft by end of day.', time: '9:12 AM' },
+            { name: 'You', letter: 'YO', text: 'Great, feel free to riff on the tagline from the brief.', time: '9:20 AM' },
+          ] },
+        { title: 'Source stock images', assignee: 'Femi Adeyemi', priority: 'Low', due: 'Jul 26',
+          desc: 'Find 6-8 campaign-appropriate images from the approved stock library. Keep it diverse and avoid anything too corporate/stiff.', comments: [] },
+      ],
+      inprogress: [
+        { title: 'Landing page wireframe', assignee: 'You', priority: 'Medium', due: 'Jul 22',
+          desc: 'Low-fidelity wireframe for the campaign landing page, mobile and desktop. Should include hero, 3-feature grid, testimonial strip, and CTA footer.',
+          comments: [
+            { name: 'Zainab Bello', letter: 'ZB', text: 'Can you make sure the CTA is above the fold on mobile too?', time: 'Yesterday' },
+            { name: 'You', letter: 'YO', text: 'Yep, already accounted for in the layout.', time: 'Yesterday' },
+          ] },
+      ],
+      done: [
+        { title: 'Approve budget', assignee: 'Amara Okafor', priority: 'High', due: 'Jul 18',
+          desc: 'Final sign-off on Q3 campaign spend across channels.',
+          comments: [{ name: 'Amara Okafor', letter: 'AO', text: 'Approved, sending the breakdown to finance now.', time: 'Jul 18' }] },
+      ],
+    },
+    groupMessages: [
+      { system: true, text: 'Femi Adeyemi joined the group' },
+      { from: 'Amara Okafor', text: 'Morning team, kicking off Q3 campaign planning today.', time: '8:41 AM', mine: false },
+      { from: 'You', text: "Sounds good, I'll have the wireframe up by tomorrow.", time: '8:44 AM', mine: true },
+      { from: 'Femi Adeyemi', text: 'I can start pulling stock images once we lock the moodboard.', time: '8:47 AM', mine: false },
+      { from: 'Amara Okafor', text: "I've assigned the social copy task to myself, will draft by EOD.", time: '9:12 AM', mine: false },
+      { system: true, text: 'Amara Okafor created task "Draft social copy"' },
+      { from: 'Chidi Nwosu', text: 'Quick q — are we still targeting the 24th for the first review?', time: '10:02 AM', mine: false },
+      { from: 'You', text: 'Yes, keeping that date. Will flag if anything slips.', time: '10:05 AM', mine: true },
+    ],
+    notifications: [
+      { text: 'You were assigned "Landing page wireframe" in Q3 Campaign Launch', time: '2h ago', unread: true, desc: 'Low-fidelity wireframe for the campaign landing page, mobile and desktop.' },
+      { text: 'Femi Adeyemi joined Marketing Team', time: '5h ago', unread: true },
+      { text: '"Draft social copy" is due in 24 hours', time: '6h ago', unread: false, desc: 'Write copy for Instagram and X launch posts, 3 variations each.' },
+      { text: 'Amara Okafor marked "Approve budget" as done', time: '1d ago', unread: false, desc: 'Final sign-off on Q3 campaign spend across channels.' },
+      { text: 'You were made admin of Marketing Team', time: '3d ago', unread: false },
+      { text: 'New message from Chidi Nwosu in Sales Ops', time: '4d ago', unread: false },
+    ],
+  };
+}
+
+function seedMember() {
+  return {
+    members: [
+      { name: 'Amara Okafor', email: 'amara@acme.com', role: 'Admin', letter: 'AO' },
+      { name: 'You (Femi Adeyemi)', email: 'femi@acme.com', role: 'Member', letter: 'FA', isMe: true },
+      { name: 'Chidi Nwosu', email: 'chidi@acme.com', role: 'Member', letter: 'CN' },
+      { name: 'Zainab Bello', email: 'zainab@acme.com', role: 'Member', letter: 'ZB' },
+      { name: 'Tunde Lawal', email: 'tunde@acme.com', role: 'Member', letter: 'TL' },
+    ],
+    tasks: {
+      todo: [
+        { title: 'Draft social copy', assignee: 'Amara Okafor', assigner: 'Amara Okafor', priority: 'High', due: 'Jul 24',
+          desc: 'Write copy for Instagram and X launch posts, 3 variations each. Coordinate with the design team once the wireframe is locked.',
+          messages: [{ from: 'Amara Okafor', text: 'Starting on this today.', time: '9:12 AM', mine: false }] },
+        { title: 'Source stock images', assignee: 'Femi Adeyemi', assigner: 'Amara Okafor', priority: 'Low', due: 'Jul 26', mine: true,
+          desc: 'Find 6-8 campaign-appropriate images from the approved stock library. Prioritize candid over posed stock photography. Check the brand folder in Drive first.',
+          messages: [
+            { from: 'Amara Okafor', text: 'Once we lock the moodboard you can start pulling from Unsplash + our paid library.', time: '9:30 AM', mine: false },
+            { from: 'You', text: 'Got it, will start today.', time: '9:41 AM', mine: true },
+          ] },
+      ],
+      inprogress: [
+        { title: 'Landing page wireframe', assignee: 'Amara Okafor', assigner: 'Amara Okafor', priority: 'Medium', due: 'Jul 22',
+          desc: 'Low-fidelity wireframe for the campaign landing page, mobile and desktop.', messages: [] },
+      ],
+      done: [
+        { title: 'Approve budget', assignee: 'Amara Okafor', assigner: 'Amara Okafor', priority: 'High', due: 'Jul 18',
+          desc: 'Final sign-off on Q3 campaign spend across channels.', messages: [] },
+      ],
+    },
+    groupMessages: [
+      { system: true, text: 'Femi Adeyemi joined the group' },
+      { from: 'Amara Okafor', text: 'Morning team, kicking off Q3 campaign planning today.', time: '8:41 AM', mine: false },
+      { from: 'You', text: 'I can start pulling stock images once we lock the moodboard.', time: '8:47 AM', mine: true },
+      { from: 'Amara Okafor', text: "I've assigned social copy to myself, will draft by EOD.", time: '9:12 AM', mine: false },
+      { system: true, text: 'Amara Okafor assigned "Source stock images" to you' },
+      { from: 'Chidi Nwosu', text: 'Quick q — are we still targeting the 24th for the first review?', time: '10:02 AM', mine: false },
+    ],
+    notifications: [
+      { text: 'You were assigned "Source stock images" in Q3 Campaign Launch', time: '3h ago', unread: true, desc: 'Find 6-8 campaign-appropriate images from the approved stock library.' },
+      { text: 'Amara Okafor commented on "Source stock images"', time: '3h ago', unread: true, desc: 'Once we lock the moodboard you can start pulling from Unsplash + our paid library.' },
+      { text: 'You were added to Marketing Team', time: '2d ago', unread: false },
+    ],
+    dms: [
+      { name: 'Zainab Bello', letter: 'ZB', unread: 5, order: 1, time: 'Today', messages: [
+        { from: 'Zainab Bello', text: 'Hey! Amara mentioned you have the moodboard reference.', time: 'Mon', mine: false },
+        { from: 'You', text: "I'll send it over shortly.", time: 'Mon', mine: true, seen: true },
+        { from: 'Zainab Bello', text: 'No rush, just want to make sure the palette matches what design signed off on.', time: 'Tue', mine: false },
+        { from: 'Zainab Bello', text: 'Also — are you free for a 15 min sync tomorrow?', time: 'Tue', mine: false },
+        { from: 'Zainab Bello', text: "Let me know either way, I'll book something.", time: 'Today', mine: false },
+      ] },
+      { name: 'Amara Okafor', letter: 'AO', unread: 2, order: 2, time: '9:06 AM', messages: [
+        { from: 'Amara Okafor', text: 'Hey, thanks for jumping on the stock images so fast.', time: 'Yesterday', mine: false },
+        { from: 'You', text: 'No problem, should have a shortlist by tomorrow.', time: 'Yesterday', mine: true, seen: true },
+        { from: 'Amara Okafor', text: 'Perfect, also can you loop in Zainab on the moodboard?', time: '9:05 AM', mine: false },
+        { from: 'Amara Okafor', text: "She's been asking about timing.", time: '9:06 AM', mine: false },
+      ] },
+      { name: 'Tunde Lawal', letter: 'TL', unread: 1, order: 3, time: 'Fri', messages: [
+        { from: 'Tunde Lawal', text: 'Did the newsletter assets get uploaded to the shared drive yet?', time: 'Fri', mine: false },
+        { from: 'You', text: "Not yet, that's on Amara's side I think.", time: 'Fri', mine: true, seen: true },
+        { from: 'Tunde Lawal', text: 'Ah got it, will check with her. Thanks!', time: 'Fri', mine: false },
+      ] },
+      { name: 'Chidi Nwosu', letter: 'CN', unread: 0, order: 4, time: '11:24 AM', messages: [
+        { from: 'Chidi Nwosu', text: 'Are you around for a quick call later?', time: '11:20 AM', mine: false },
+        { from: 'You', text: 'Yep, free after 2pm.', time: '11:24 AM', mine: true, seen: false },
+      ] },
+      { name: 'Chinedu Okonkwo', letter: 'CO', unread: 12, order: 5, time: 'Today', messages: [
+        { from: 'Chinedu Okonkwo', text: 'Hey, welcome to the Sales Ops overlap project.', time: '3 weeks ago', mine: false },
+        { from: 'You', text: 'Sounds good, happy to help.', time: '3 weeks ago', mine: true, seen: true },
+        { from: 'Chinedu Okonkwo', text: 'We pushed the deadline to next Friday, more breathing room now.', time: 'Yesterday', mine: false },
+        { from: 'Chinedu Okonkwo', text: 'Let me know if you have any blockers.', time: 'Today', mine: false },
+      ] },
+      { name: 'Amara Okafor (Design)', letter: 'AD', unread: 0, order: 6, time: '2 weeks ago', messages: [
+        { from: 'Amara Okafor (Design)', text: 'Random — are you the same Femi from the Lagos meetup?', time: '2 weeks ago', mine: false },
+        { from: 'You', text: 'Haha yes, small world.', time: '2 weeks ago', mine: true, seen: true },
+      ] },
+    ],
+  };
+}
+
+const ORG_GROUPS = [
+  { name: 'Marketing Team', members: 6, projects: 3, admin: 'You' },
+  { name: 'Sales Ops', members: 9, projects: 2, admin: 'Chidi Nwosu' },
+  { name: 'Product Design', members: 5, projects: 4, admin: 'Zainab Bello' },
+];
+
+class Component extends DCLogic {
+  state = {
+    role: 'admin', screen: 'dashboard', groupTab: 'projects',
+    composer: '', dmOrigin: 'dashboard', activeDmName: null, activeTask: null,
+    admin: seedAdmin(), member: seedMember(),
+  };
+
+  mapMsg(m) {
+    return { ...m, align: m.mine ? 'flex-end' : 'flex-start', selfAlign: m.mine ? 'margin-left:auto;' : '',
+      bg: m.mine ? 'var(--color-accent-700)' : 'var(--color-neutral-800)', color: m.mine ? 'var(--color-accent-100)' : 'var(--color-text)' };
+  }
+
+  renderVals() {
+    const s = this.state;
+    const isAdmin = s.role === 'admin';
+    const data = isAdmin ? s.admin : s.member;
+    const nav = (key) => ({ [key]: (s.screen === key || (key === 'group' && ['group','invite','kanban','newtask','task'].includes(s.screen))) ? { background: 'color-mix(in srgb, var(--color-accent) 14%, transparent)' } : {} });
+
+    const activeKey = ['group', 'invite', 'kanban', 'newtask', 'task'].includes(s.screen) ? 'group' : s.screen;
+    const navKeys = ['dashboard', 'notifications', 'group', 'org', 'settings'];
+    const navStyle = {};
+    navKeys.forEach(k => { navStyle[k] = k === activeKey ? { background: 'color-mix(in srgb, var(--color-accent) 14%, transparent)' } : {}; });
+
+    const totalUnreadNotifs = data.notifications.filter(n => n.unread).length;
+
+    const dashGroups = isAdmin ? [
+      { name: 'Marketing Team', role: 'Admin', members: 6, projects: 3, roleClass: tagRole('Admin') },
+      { name: 'XAUUSD Trading Group', role: 'Admin', members: 4, projects: 1, roleClass: tagRole('Admin') },
+      { name: 'Family Errands', role: 'Member', members: 3, projects: 1, roleClass: tagRole('Member') },
+    ] : [{ name: 'Marketing Team', role: 'Member', members: 5, projects: 3, roleClass: tagRole('Member') }];
+
+    const openTaskFn = (t, col) => () => { t._col = col; this.setState({ activeTask: t, screen: 'task' }); };
+    const assignedToYou = isAdmin
+      ? [ { title: 'Landing page wireframe', sub: 'Q3 Campaign Launch · Marketing Team', due: 'Due Jul 22', open: openTaskFn(data.tasks.inprogress[0], 'inprogress') },
+          { title: 'Draft social copy', sub: 'Q3 Campaign Launch · assigned to Amara', due: 'Due Jul 24', open: openTaskFn(data.tasks.todo[0], 'todo') } ]
+      : [ { title: 'Source stock images', sub: 'Q3 Campaign Launch · Marketing Team', due: 'Due Jul 26', open: openTaskFn(data.tasks.todo[1], 'todo') } ];
+
+    const recentActivity = (isAdmin ? data.notifications.slice(0, 4) : data.notifications).map(n => ({ text: n.text, time: n.time }));
+
+    const groupSubtitle = isAdmin ? '6 members · you are Admin' : '5 members · you are a Member';
+    const tabStyleFn = (sel) => sel ? { color: 'var(--color-accent)', boxShadow: 'inset 0 0 0 1px var(--color-accent)' } : {};
+    const tabStyle = { projects: tabStyleFn(s.groupTab === 'projects'), chat: tabStyleFn(s.groupTab === 'chat'), members: tabStyleFn(s.groupTab === 'members') };
+
+    const projects = PROJECTS.map(p => ({ ...p, statusClass: tagStatus(p.status) }));
+
+    const chatMemberList = data.members.map(m => ({
+      letter: m.letter, name: m.isMe ? m.name : m.name,
+      open: m.isMe ? (() => {}) : () => this.openDm(m.name.replace('You (', '').replace(')', ''), 'group'),
+    }));
+
+    const groupMessages = data.groupMessages.map(m => {
+      if (m.system) return { isSystem: true, text: m.text, showBubble: 'none', align: 'flex-start', selfAlign: '', from: '', time: '', bg: '', color: '', cursor: 'default', openSender: () => {} };
+      const mapped = this.mapMsg(m);
+      const canOpenDm = !isAdmin && !m.mine;
+      return { ...mapped, isSystem: false, showBubble: 'flex', cursor: canOpenDm ? 'pointer' : 'default', openSender: canOpenDm ? () => this.openDm(mapped.from, 'group') : () => {} };
+    });
+
+    const memberRows = data.members.map(m => ({
+      name: m.name, email: m.email, role: m.role, letter: m.letter, roleClass: tagRole(m.role),
+      showAdminActions: isAdmin && !m.isMe, showMessageAction: !isAdmin && !m.isMe,
+      adminActionLabel: m.role === 'Member' ? 'Make admin' : 'Remove admin',
+      open: () => this.openDm(m.name, 'group'),
+    }));
+
+    const mapTask = (t, col) => {
+      const db = dueBadge(t.due, col);
+      return {
+        title: t.title, assignee: t.assignee, due: t.due, priority: t.priority, priorityClass: tagPriority(t.priority), mine: !!t.mine,
+        dueBadgeStyle: db.style, dueLabel: db.label,
+        msgCount: isAdmin ? `${t.comments.length} comment${t.comments.length === 1 ? '' : 's'}` : `${t.messages.length} message${t.messages.length === 1 ? '' : 's'}`,
+        open: openTaskFn(t, col),
+      };
+    };
+    const todoTasks = data.tasks.todo.map(t => mapTask(t, 'todo'));
+    const inprogressTasks = data.tasks.inprogress.map(t => mapTask(t, 'inprogress'));
+    const doneTasks = data.tasks.done.map(t => mapTask(t, 'done'));
+
+    let task = null;
+    const at = s.activeTask;
+    if (at) {
+      const col = at._col;
+      const isDone = col === 'done';
+      const dueStyle = dueValueColor(at.due, col);
+      const dueStyleCss = dueStyle.color ? `color:${dueStyle.color};font-weight:600;` : '';
+      if (isAdmin) {
+        task = { title: at.title, priority: at.priority, priorityClass: tagPriority(at.priority), desc: at.desc, assignee: at.assignee, due: at.due,
+          dueStyleCss, isDone, noComments: at.comments.length === 0, comments: at.comments };
+      } else {
+        const involved = at.assignee === 'Femi Adeyemi' || at.assigner === 'Femi Adeyemi';
+        const otherParty = at.assignee === 'Femi Adeyemi' ? at.assigner : at.assignee;
+        task = { title: at.title, priority: at.priority, priorityClass: tagPriority(at.priority), desc: at.desc, assignee: at.assignee, assigner: at.assigner, due: at.due,
+          dueStyleCss, isDone, mine: !!at.mine, notMine: !at.mine, involved, notInvolved: !involved, otherParty,
+          noMessages: at.messages.length === 0, messages: at.messages.map(m => this.mapMsg(m)) };
+      }
+    }
+
+    const settingsName = isAdmin ? 'You' : 'Femi Adeyemi';
+    const settingsEmail = isAdmin ? 'you@acme.com' : 'femi@acme.com';
+    const settingsAccountType = isAdmin ? 'Organization owner (Acme Inc)' : 'Individual';
+    const notifPrefs = [
+      { label: 'Task assigned to me', checked: true },
+      { label: 'Deadline approaching', checked: true },
+      { label: 'Added to a group', checked: true },
+      ...(isAdmin ? [{ label: 'Task marked done (as admin)', checked: false }] : []),
+      { label: 'New chat message', checked: true },
+    ];
+
+    // DMs (member only)
+    let dmSidebar = [], hasMoreDms = false, hasNoDms = false, dmList = [], dm = null, dmBackLabel = 'Dashboard';
+    if (!isAdmin) {
+      const sorted = [...s.member.dms].sort((a, b) => a.order - b.order);
+      hasNoDms = sorted.length === 0;
+      hasMoreDms = sorted.length > 3;
+      dmSidebar = sorted.slice(0, 3).map(d => ({
+        name: d.name, hasUnread: d.unread > 0, unread: d.unread,
+        navStyle: (s.screen === 'dm' && s.activeDmName === d.name) ? { background: 'color-mix(in srgb, var(--color-accent) 14%, transparent)' } : {},
+        open: () => this.openDm(d.name, 'dashboard'),
+      }));
+      dmList = sorted.map(d => {
+        const last = d.messages[d.messages.length - 1];
+        return { name: d.name, letter: d.letter, unread: d.unread, hasUnread: d.unread > 0, time: d.time,
+          nameWeight: d.unread > 0 ? 700 : 600, previewColor: d.unread > 0 ? 'var(--color-text)' : 'color-mix(in srgb, var(--color-text) 55%, transparent)',
+          preview: (last.mine ? 'You: ' : '') + last.text, openFromInbox: () => this.openDm(d.name, 'dmInbox') };
+      });
+      if (s.activeDmName) {
+        const d = s.member.dms.find(x => x.name === s.activeDmName);
+        if (d) {
+          const mapped = d.messages.map(m => this.mapMsg(m));
+          const lastMineIdx = [...mapped].reverse().findIndex(m => m.mine);
+          const lastMineRealIdx = lastMineIdx === -1 ? -1 : mapped.length - 1 - lastMineIdx;
+          dm = { name: d.name, letter: d.letter, messages: mapped.map((m, i) => ({ ...m, showReceipt: i === lastMineRealIdx, receipt: m.seen ? 'Seen' : 'Delivered' })) };
+        }
+        dmBackLabel = s.dmOrigin === 'group' ? 'Marketing Team chat' : s.dmOrigin === 'dmInbox' ? 'Messages' : 'Dashboard';
+      }
+    }
+
+    const isGroupChat = s.screen === 'group' && s.groupTab === 'chat';
+    const isTaskScreen = s.screen === 'task';
+    const isDmScreen = s.screen === 'dm';
+    const sendCurrent = () => {
+      const text = s.composer.trim();
+      if (!text) return;
+      if (isGroupChat) data.groupMessages.push({ from: isAdmin ? 'You' : 'You', text, time: 'Now', mine: true });
+      else if (isTaskScreen && at) { if (isAdmin) at.comments.push({ name: 'You', letter: 'YO', text, time: 'Now' }); else at.messages.push({ from: 'You', text, time: 'Now', mine: true }); }
+      else if (isDmScreen && s.activeDmName) { const d = s.member.dms.find(x => x.name === s.activeDmName); if (d) d.messages.push({ from: 'You', text, time: 'Now', mine: true, seen: false }); }
+      this.setState({ composer: '' });
+    };
+
+    return {
+      isAdminRole: isAdmin, isMemberRole: !isAdmin,
+      isDashboard: s.screen === 'dashboard', isGroup: s.screen === 'group', isInvite: s.screen === 'invite',
+      isKanban: s.screen === 'kanban', isNewTask: s.screen === 'newtask',
+      isTaskAdmin: s.screen === 'task' && isAdmin, isTaskMember: s.screen === 'task' && !isAdmin,
+      isOrg: s.screen === 'org', isNotifications: s.screen === 'notifications', isSettings: s.screen === 'settings',
+      isDmInbox: s.screen === 'dmInbox' && !isAdmin, isDm: s.screen === 'dm' && !isAdmin,
+      isProjectsTab: s.groupTab === 'projects', isChatTab: s.groupTab === 'chat', isMembersTab: s.groupTab === 'members',
+      navStyle, hasUnreadNotifs: totalUnreadNotifs > 0,
+      dashSubtitle: isAdmin ? '2 admin, 1 member across 3 groups' : 'Member of 1 group',
+      dashGroups, assignedToYou, recentActivity,
+      groupSubtitle, tabStyle, projects, memberCount: data.members.length, chatMemberList, groupMessages, memberRows,
+      todoTasks, inprogressTasks, doneTasks, todoCount: todoTasks.length, inprogressCount: inprogressTasks.length, doneCount: doneTasks.length,
+      task, allMemberNames: data.members.map(m => m.name),
+      orgGroups: ORG_GROUPS, notifications: data.notifications.map(n => ({ ...n, weight: n.unread ? 600 : 400, hasDesc: !!n.desc })),
+      settingsName, settingsEmail, settingsAccountType, notifPrefs,
+      dmSidebar, hasMoreDms, hasNoDms, dmList, dm, dmBackLabel,
+      composer: s.composer, setComposer: (e) => this.setState({ composer: e.target.value }), sendComposer: sendCurrent,
+      onComposerKeyDown: (e) => { if (e.key === 'Enter') { e.preventDefault(); sendCurrent(); } },
+      roleBtnStyle: { admin: isAdmin ? { color: 'var(--color-accent)', background: 'color-mix(in srgb, var(--color-accent) 14%, transparent)' } : {}, member: !isAdmin ? { color: 'var(--color-accent)', background: 'color-mix(in srgb, var(--color-accent) 14%, transparent)' } : {} },
+      setRoleAdmin: () => this.setState({ role: 'admin', screen: 'dashboard' }),
+      setRoleMember: () => this.setState({ role: 'member', screen: 'dashboard' }),
+      goDashboard: () => this.setState({ screen: 'dashboard' }),
+      goNotifications: () => this.setState({ screen: 'notifications' }),
+      goGroup: () => this.setState({ screen: 'group', groupTab: 'projects' }),
+      goInvite: () => this.setState({ screen: 'invite' }),
+      goOrg: () => this.setState({ screen: 'org' }),
+      goSettings: () => this.setState({ screen: 'settings' }),
+      goNewTask: () => this.setState({ screen: 'newtask' }),
+      selectProjectsTab: () => this.setState({ groupTab: 'projects' }),
+      selectChatTab: () => this.setState({ groupTab: 'chat' }),
+      selectMembersTab: () => this.setState({ groupTab: 'members' }),
+      openProject: () => this.setState({ screen: 'kanban' }),
+      backToGroup: () => this.setState({ screen: 'group', groupTab: 'projects' }),
+      backToKanban: () => this.setState({ screen: 'kanban' }),
+      goDmInbox: () => this.setState({ screen: 'dmInbox' }),
+      dmBack: () => {
+        if (s.dmOrigin === 'group') this.setState({ screen: 'group', groupTab: 'chat' });
+        else if (s.dmOrigin === 'dmInbox') this.setState({ screen: 'dmInbox' });
+        else this.setState({ screen: 'dashboard' });
+      },
+    };
+  }
+
+  openDm(name, origin) {
+    const d = this.state.member.dms.find(x => x.name === name);
+    if (d) d.unread = 0;
+    this.setState({ activeDmName: name, dmOrigin: origin, screen: 'dm' });
+  }
+}
+</script>
+</body>
+</html>
