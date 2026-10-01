@@ -5,6 +5,7 @@ import InviteLink from "@/models/InviteLink";
 import Group from "@/models/Group";
 import GroupMember from "@/models/GroupMember";
 import GroupMessage from "@/models/GroupMessage";
+import User from "@/models/User";
 import { notifyMany } from "@/lib/notify";
 
 async function validateInvite(token: string) {
@@ -49,6 +50,21 @@ export async function POST(_req: Request, { params }: { params: Promise<{ token:
   const result = await validateInvite(token);
   if ("error" in result) return NextResponse.json({ error: result.error }, { status: result.status });
   const { invite, group } = result;
+
+  const user = await User.findById(session.user.id);
+  if (!user) return NextResponse.json({ error: "User not found" }, { status: 404 });
+
+  if (user.signupStatus !== "approved") {
+    return NextResponse.json({ error: "Your account signup has not been approved yet." }, { status: 403 });
+  }
+
+  if (group.orgId && (!user.orgId || user.orgId.toString() !== group.orgId.toString())) {
+    return NextResponse.json({ error: "You must belong to the organization that owns this group." }, { status: 403 });
+  }
+
+  if (invite.type === "email" && invite.email && user.email.toLowerCase() !== invite.email.toLowerCase()) {
+    return NextResponse.json({ error: "This invite was sent to a different email address." }, { status: 403 });
+  }
 
   const existingMembership = await GroupMember.findOne({ groupId: group._id, userId: session.user.id });
   if (existingMembership) {

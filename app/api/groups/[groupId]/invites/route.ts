@@ -4,6 +4,8 @@ import { auth } from "@/auth";
 import { connectDB } from "@/lib/db";
 import Group from "@/models/Group";
 import InviteLink from "@/models/InviteLink";
+import User from "@/models/User";
+import GroupMember from "@/models/GroupMember";
 import { isGroupAdmin } from "@/lib/permissions";
 import { sendEmail } from "@/lib/email";
 import { groupInviteEmail } from "@/lib/email-templates";
@@ -42,8 +44,25 @@ export async function POST(req: Request, { params }: { params: Promise<{ groupId
   if (type !== "email" && type !== "link") {
     return NextResponse.json({ error: "type must be 'email' or 'link'" }, { status: 400 });
   }
-  if (type === "email" && !body.email) {
-    return NextResponse.json({ error: "email is required for email invites" }, { status: 400 });
+  if (type === "email") {
+    if (!body.email) {
+      return NextResponse.json({ error: "email is required for email invites" }, { status: 400 });
+    }
+    const targetEmail = String(body.email).toLowerCase().trim();
+    const targetUser = await User.findOne({ email: targetEmail });
+    if (!targetUser) {
+      return NextResponse.json({ error: "No user account found with this email on TaskFlow" }, { status: 400 });
+    }
+    if (targetUser.signupStatus !== "approved") {
+      return NextResponse.json({ error: "This user's account signup has not been approved yet" }, { status: 400 });
+    }
+    if (group.orgId && (!targetUser.orgId || targetUser.orgId.toString() !== group.orgId.toString())) {
+      return NextResponse.json({ error: "This user does not belong to your organization" }, { status: 400 });
+    }
+    const isAlreadyMember = await GroupMember.findOne({ groupId, userId: targetUser._id });
+    if (isAlreadyMember) {
+      return NextResponse.json({ error: "This user is already a member of this group" }, { status: 400 });
+    }
   }
 
   const token = crypto.randomBytes(24).toString("hex");
