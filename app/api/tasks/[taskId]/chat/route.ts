@@ -41,6 +41,11 @@ export async function GET(_req: Request, { params }: { params: Promise<{ taskId:
 
   const messages = await TaskChatMessage.find({ taskId }).sort({ createdAt: 1 });
 
+  // Count messages this viewer hasn't read yet — before we mark them.
+  const unreadCount = ctx.canWrite
+    ? await TaskChatMessage.countDocuments({ taskId, senderId: { $ne: session.user.id }, readAt: null })
+    : 0;
+
   // Only the two active participants' unread state matters — a passively-viewing admin
   // reading along doesn't clear anyone else's unread badge.
   if (ctx.canWrite) {
@@ -50,7 +55,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ taskId:
     );
   }
 
-  return NextResponse.json({ messages, canWrite: ctx.canWrite });
+  return NextResponse.json({ messages, canWrite: ctx.canWrite, unreadCount });
 }
 
 export async function POST(req: Request, { params }: { params: Promise<{ taskId: string }> }) {

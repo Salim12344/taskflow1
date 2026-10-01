@@ -34,15 +34,32 @@ export default function DmThreadPage({ params }: { params: Promise<{ threadId: s
   const [pendingVoiceBlob, setPendingVoiceBlob] = useState<Blob | null>(null);
   const [pendingVoiceUrl, setPendingVoiceUrl] = useState<string | null>(null);
   const voice = useVoiceRecorder();
-  const { containerRef: chatContainerRef, endRef, onScroll: onChatScroll } = useStickToBottom(messages);
+  const initialUnreadRef = useRef<number | null>(null);
+  const dividerRef = useRef<HTMLDivElement>(null);
+  const scrolledToUnreadRef = useRef(false);
+  const hasUnread = (initialUnreadRef.current ?? 0) > 0;
+  const { containerRef: chatContainerRef, endRef, onScroll: onChatScroll } = useStickToBottom(messages, { skipInitialScroll: hasUnread });
   const lastTypingPingRef = useRef(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   function loadMessages() {
-    api<{ messages: Message[]; otherTyping: boolean }>(`/api/dm/${threadId}/messages`)
-      .then((d) => { setMessages(d.messages); setOtherTyping(d.otherTyping); setError(null); })
+    api<{ messages: Message[]; otherTyping: boolean; unreadCount: number }>(`/api/dm/${threadId}/messages`)
+      .then((d) => {
+        setMessages(d.messages);
+        setOtherTyping(d.otherTyping);
+        setError(null);
+        if (initialUnreadRef.current === null) initialUnreadRef.current = d.unreadCount;
+      })
       .catch((e) => setError(e));
   }
+
+  useEffect(() => {
+    if (scrolledToUnreadRef.current) return;
+    if (initialUnreadRef.current === null || initialUnreadRef.current === 0) return;
+    if (messages.length === 0) return;
+    scrolledToUnreadRef.current = true;
+    requestAnimationFrame(() => dividerRef.current?.scrollIntoView({ block: "start", behavior: "instant" }));
+  }, [messages.length]);
 
   function onComposerChange(value: string) {
     setComposer(value);
@@ -176,10 +193,32 @@ export default function DmThreadPage({ params }: { params: Promise<{ threadId: s
       <div ref={chatContainerRef} onScroll={onChatScroll} style={{ flex: 1, overflowY: "auto", display: "flex", flexDirection: "column", gap: 10 }}>
         {messages.length === 0 && <div className="card-meta">No messages yet. Say hello.</div>}
         {messages.map((m, i) => {
+          const unreadCount = initialUnreadRef.current ?? 0;
+          const unreadStartIndex = unreadCount > 0 ? Math.max(0, messages.length - unreadCount) : -1;
+          const isUnreadStart = i === unreadStartIndex;
           const mine = m.senderId === session?.user?.id;
           const isLastMine = mine && i === messages.length - 1;
           return (
-            <div key={m._id} className="row-hover tf-msg-in" style={{ display: "flex", flexDirection: "column", alignItems: mine ? "flex-end" : "flex-start", maxWidth: "55%", alignSelf: mine ? "flex-end" : "flex-start" }}>
+            <div key={m._id} style={{ display: "contents" }}>
+              {isUnreadStart && (
+                <div
+                  ref={dividerRef}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 12,
+                    margin: "12px 0",
+                    color: "var(--color-accent-300)",
+                    fontSize: 12,
+                    fontWeight: 600,
+                  }}
+                >
+                  <div style={{ flex: 1, height: 1, background: "color-mix(in srgb, var(--color-accent-300) 40%, transparent)" }} />
+                  <span>{unreadCount} unread message{unreadCount > 1 ? "s" : ""}</span>
+                  <div style={{ flex: 1, height: 1, background: "color-mix(in srgb, var(--color-accent-300) 40%, transparent)" }} />
+                </div>
+              )}
+              <div className="row-hover tf-msg-in" style={{ display: "flex", flexDirection: "column", alignItems: mine ? "flex-end" : "flex-start", maxWidth: "55%", alignSelf: mine ? "flex-end" : "flex-start" }}>
               <div style={{ fontSize: 11, color: "color-mix(in srgb, var(--color-text) 55%, transparent)", marginBottom: 3, padding: "0 2px" }}>
                 {new Date(m.createdAt).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}
               </div>
@@ -208,6 +247,7 @@ export default function DmThreadPage({ params }: { params: Promise<{ threadId: s
                   {m.readAt ? `Seen ${new Date(m.readAt).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}` : "Delivered"}
                 </div>
               )}
+              </div>
             </div>
           );
         })}

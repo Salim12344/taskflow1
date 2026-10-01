@@ -61,7 +61,11 @@ export default function TaskPage({ params }: { params: Promise<{ taskId: string 
   const [submitting, setSubmitting] = useState(false);
   const [reassigning, setReassigning] = useState(false);
   const voice = useVoiceRecorder();
-  const { containerRef: chatContainerRef, endRef: chatEndRef, onScroll: onChatScroll } = useStickToBottom(chatMessages);
+  const initialUnreadRef = useRef<number | null>(null);
+  const dividerRef = useRef<HTMLDivElement>(null);
+  const scrolledToUnreadRef = useRef(false);
+  const hasUnread = (initialUnreadRef.current ?? 0) > 0;
+  const { containerRef: chatContainerRef, endRef: chatEndRef, onScroll: onChatScroll } = useStickToBottom(chatMessages, { skipInitialScroll: hasUnread });
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   function load() {
@@ -81,8 +85,12 @@ export default function TaskPage({ params }: { params: Promise<{ taskId: string 
   useEffect(load, [taskId]);
 
   function loadChat() {
-    api<{ messages: ChatMessage[]; canWrite: boolean }>(`/api/tasks/${taskId}/chat`)
-      .then((d) => { setChatMessages(d.messages); setChatCanWrite(d.canWrite); })
+    api<{ messages: ChatMessage[]; canWrite: boolean; unreadCount: number }>(`/api/tasks/${taskId}/chat`)
+      .then((d) => {
+        setChatMessages(d.messages);
+        setChatCanWrite(d.canWrite);
+        if (initialUnreadRef.current === null) initialUnreadRef.current = d.unreadCount;
+      })
       .catch(() => {});
   }
 
@@ -92,6 +100,14 @@ export default function TaskPage({ params }: { params: Promise<{ taskId: string 
     return () => clearInterval(interval);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [taskId]);
+
+  useEffect(() => {
+    if (scrolledToUnreadRef.current) return;
+    if (initialUnreadRef.current === null || initialUnreadRef.current === 0) return;
+    if (chatMessages.length === 0) return;
+    scrolledToUnreadRef.current = true;
+    requestAnimationFrame(() => dividerRef.current?.scrollIntoView({ block: "start", behavior: "instant" }));
+  }, [chatMessages.length]);
 
 
   const userId = session?.user?.id;
@@ -400,37 +416,60 @@ export default function TaskPage({ params }: { params: Promise<{ taskId: string 
           )}
           <div ref={chatContainerRef} onScroll={onChatScroll} style={{ flex: 1, overflowY: "auto", display: "flex", flexDirection: "column", gap: 10 }}>
             {chatMessages.length === 0 && <div className="card-meta">No messages yet.</div>}
-            {chatMessages.map((m) => {
+            {chatMessages.map((m, idx) => {
+              const unreadCount = initialUnreadRef.current ?? 0;
+              const unreadStartIndex = unreadCount > 0 ? Math.max(0, chatMessages.length - unreadCount) : -1;
+              const isUnreadStart = idx === unreadStartIndex;
               const mine = m.senderId === userId;
               const sender = members.find((mem) => mem.userId._id === m.senderId);
               return (
-                <div key={m._id} className="row-hover tf-msg-in" style={{ display: "flex", gap: 8, alignSelf: mine ? "flex-end" : "flex-start", flexDirection: mine ? "row-reverse" : "row", maxWidth: "80%" }}>
-                  {!mine && <Avatar name={sender?.userId.name ?? "?"} avatarUrl={sender?.userId.avatarUrl} size={24} />}
-                  <div style={{ display: "flex", flexDirection: "column", alignItems: mine ? "flex-end" : "flex-start" }}>
-                    <div style={{ fontSize: 11, color: "color-mix(in srgb, var(--color-text) 55%, transparent)", marginBottom: 3, padding: "0 2px" }}>
-                      {sender?.userId.name ?? "—"} · {new Date(m.createdAt).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}
+                <div key={m._id} style={{ display: "contents" }}>
+                  {isUnreadStart && (
+                    <div
+                      ref={dividerRef}
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 12,
+                        margin: "12px 0",
+                        color: "var(--color-accent-300)",
+                        fontSize: 12,
+                        fontWeight: 600,
+                      }}
+                    >
+                      <div style={{ flex: 1, height: 1, background: "color-mix(in srgb, var(--color-accent-300) 40%, transparent)" }} />
+                      <span>{unreadCount} unread message{unreadCount > 1 ? "s" : ""}</span>
+                      <div style={{ flex: 1, height: 1, background: "color-mix(in srgb, var(--color-accent-300) 40%, transparent)" }} />
                     </div>
-                    <div style={{ display: "flex", gap: 4, alignItems: "flex-end", flexDirection: mine ? "row-reverse" : "row" }}>
-                      <div style={{ padding: "9px 13px", borderRadius: 14, fontSize: 14, lineHeight: 1.4, background: mine ? "var(--color-accent)" : "var(--color-surface)", color: mine ? "var(--color-bg)" : "var(--color-text)" }}>
-                        {m.replyTo && (
-                          <div style={{ borderLeft: "2px solid currentColor", background: "color-mix(in srgb, currentColor 14%, transparent)", borderRadius: 6, padding: "4px 8px", marginBottom: 6, fontSize: 12.5 }}>
-                            <div style={{ fontWeight: 600, opacity: 0.9 }}>{m.replyTo.senderName}</div>
-                            <div style={{ opacity: 0.75, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: 200 }}>{m.replyTo.text}</div>
-                          </div>
-                        )}
-                        {m.attachments?.map((a, i) => <div key={i} style={{ marginBottom: m.text ? 6 : 0 }}><AttachmentView attachment={a} mine={mine} /></div>)}
-                        {m.text}
+                  )}
+                  <div className="row-hover tf-msg-in" style={{ display: "flex", gap: 8, alignSelf: mine ? "flex-end" : "flex-start", flexDirection: mine ? "row-reverse" : "row", maxWidth: "80%" }}>
+                    {!mine && <Avatar name={sender?.userId.name ?? "?"} avatarUrl={sender?.userId.avatarUrl} size={24} />}
+                    <div style={{ display: "flex", flexDirection: "column", alignItems: mine ? "flex-end" : "flex-start" }}>
+                      <div style={{ fontSize: 11, color: "color-mix(in srgb, var(--color-text) 55%, transparent)", marginBottom: 3, padding: "0 2px" }}>
+                        {sender?.userId.name ?? "—"} · {new Date(m.createdAt).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}
                       </div>
-                      {chatCanWrite && (
-                        <button
-                          onClick={() => setReplyingTo({ _id: m._id, text: m.text || "📎 Attachment", senderName: sender?.userId.name ?? "—" })}
-                          title="Reply"
-                          aria-label={`Reply to ${sender?.userId.name ?? "message"}`}
-                          style={{ background: "none", border: "none", cursor: "pointer", padding: 4, opacity: 0.55, flex: "none" }}
-                        >
-                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 17l-5-5 5-5M4 12h10a5 5 0 015 5v2" /></svg>
-                        </button>
-                      )}
+                      <div style={{ display: "flex", gap: 4, alignItems: "flex-end", flexDirection: mine ? "row-reverse" : "row" }}>
+                        <div style={{ padding: "9px 13px", borderRadius: 14, fontSize: 14, lineHeight: 1.4, background: mine ? "var(--color-accent)" : "var(--color-surface)", color: mine ? "var(--color-bg)" : "var(--color-text)" }}>
+                          {m.replyTo && (
+                            <div style={{ borderLeft: "2px solid currentColor", background: "color-mix(in srgb, currentColor 14%, transparent)", borderRadius: 6, padding: "4px 8px", marginBottom: 6, fontSize: 12.5 }}>
+                              <div style={{ fontWeight: 600, opacity: 0.9 }}>{m.replyTo.senderName}</div>
+                              <div style={{ opacity: 0.75, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: 200 }}>{m.replyTo.text}</div>
+                            </div>
+                          )}
+                          {m.attachments?.map((a, i) => <div key={i} style={{ marginBottom: m.text ? 6 : 0 }}><AttachmentView attachment={a} mine={mine} /></div>)}
+                          {m.text}
+                        </div>
+                        {chatCanWrite && (
+                          <button
+                            onClick={() => setReplyingTo({ _id: m._id, text: m.text || "📎 Attachment", senderName: sender?.userId.name ?? "—" })}
+                            title="Reply"
+                            aria-label={`Reply to ${sender?.userId.name ?? "message"}`}
+                            style={{ background: "none", border: "none", cursor: "pointer", padding: 4, opacity: 0.55, flex: "none" }}
+                          >
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 17l-5-5 5-5M4 12h10a5 5 0 015 5v2" /></svg>
+                          </button>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>

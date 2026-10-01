@@ -6,6 +6,7 @@ import Group from "@/models/Group";
 import InviteLink from "@/models/InviteLink";
 import { isGroupAdmin } from "@/lib/permissions";
 import { sendEmail } from "@/lib/email";
+import { groupInviteEmail } from "@/lib/email-templates";
 
 export async function GET(_req: Request, { params }: { params: Promise<{ groupId: string }> }) {
   const session = await auth();
@@ -64,7 +65,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ groupId
     await sendEmail(
       body.email,
       `You've been invited to join ${group.name} on TaskFlow`,
-      `Join here: /invite/${token}`
+      groupInviteEmail(session.user.name ?? "Someone", group.name, token)
     );
   }
 

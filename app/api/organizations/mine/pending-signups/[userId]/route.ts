@@ -4,6 +4,8 @@ import { connectDB } from "@/lib/db";
 import Organization from "@/models/Organization";
 import User from "@/models/User";
 import { hasOrgPermission } from "@/lib/permissions";
+import { sendEmail } from "@/lib/email";
+import { signupApprovedEmail, signupRejectedEmail } from "@/lib/email-templates";
 
 export async function PATCH(req: Request, { params }: { params: Promise<{ userId: string }> }) {
   const session = await auth();
@@ -39,6 +41,17 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ userId
   else if (action === "reject") target.signupStatus = "rejected";
   else if (action === "reopen") target.signupStatus = "pending";
   await target.save();
+
+  // Notify the applicant by email (fire-and-forget — don't fail the request if email bounces).
+  if (target.email) {
+    const orgName: string = org.name ?? "your organisation";
+    const userName: string = target.name ?? "there";
+    if (action === "approve") {
+      sendEmail(target.email, "Your TaskFlow account has been approved 🎉", signupApprovedEmail(userName, orgName)).catch(console.error);
+    } else if (action === "reject") {
+      sendEmail(target.email, "Update on your TaskFlow account request", signupRejectedEmail(userName, orgName)).catch(console.error);
+    }
+  }
 
   return NextResponse.json({ ok: true });
 }

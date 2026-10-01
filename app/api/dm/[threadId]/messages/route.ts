@@ -24,13 +24,20 @@ export async function GET(_req: Request, { params }: { params: Promise<{ threadI
 
   const messages = await DMMessage.find({ threadId }).sort({ createdAt: 1 });
 
+  // Count messages this viewer hasn't read yet — before we mark them.
+  const unreadCount = await DMMessage.countDocuments({
+    threadId,
+    senderId: { $ne: session.user.id },
+    readAt: null,
+  });
+
   await DMMessage.updateMany(
     { threadId, senderId: { $ne: session.user.id }, readAt: null },
     { $set: { readAt: new Date() } }
   );
 
   const typingUsers = await getTypingUsers("dm", threadId, session.user.id);
-  return NextResponse.json({ messages, otherTyping: typingUsers.length > 0 });
+  return NextResponse.json({ messages, otherTyping: typingUsers.length > 0, unreadCount });
 }
 
 export async function POST(req: Request, { params }: { params: Promise<{ threadId: string }> }) {

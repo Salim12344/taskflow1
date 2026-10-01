@@ -20,6 +20,14 @@ export async function GET(_req: Request, { params }: { params: Promise<{ groupId
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
+  // Count messages this viewer hasn't read yet — before we mark them. The client uses this
+  // to show an "unread divider" and scroll to the first unread message on first open.
+  const unreadCount = await GroupMessage.countDocuments({
+    groupId,
+    senderId: { $ne: session.user.id },
+    "readBy.userId": { $ne: session.user.id },
+  });
+
   // Mark every message not already read by this viewer as read by them (aggregate "Seen by N" receipts).
   await GroupMessage.updateMany(
     { groupId, senderId: { $ne: session.user.id }, "readBy.userId": { $ne: session.user.id } },
@@ -32,7 +40,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ groupId
     .populate("readBy.userId", "name avatarUrl")
     .populate("mentions", "name");
   const typingUsers = await getTypingUsers("group", groupId, session.user.id);
-  return NextResponse.json({ messages, typingUsers });
+  return NextResponse.json({ messages, typingUsers, unreadCount });
 }
 
 export async function POST(req: Request, { params }: { params: Promise<{ groupId: string }> }) {
