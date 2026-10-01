@@ -50,14 +50,8 @@ export async function POST(req: Request, { params }: { params: Promise<{ groupId
     }
     const targetEmail = String(body.email).toLowerCase().trim();
     const targetUser = await User.findOne({ email: targetEmail });
-    if (!targetUser) {
-      return NextResponse.json({ error: "No user account found with this email on TaskFlow" }, { status: 400 });
-    }
-    if (targetUser.signupStatus !== "approved") {
-      return NextResponse.json({ error: "This user's account signup has not been approved yet" }, { status: 400 });
-    }
-    if (group.orgId && (!targetUser.orgId || targetUser.orgId.toString() !== group.orgId.toString())) {
-      return NextResponse.json({ error: "This user does not belong to your organization" }, { status: 400 });
+    if (!targetUser || targetUser.signupStatus !== "approved" || (group.orgId && (!targetUser.orgId || targetUser.orgId.toString() !== group.orgId.toString()))) {
+      return NextResponse.json({ error: "This user doesn't exist in this organisation" }, { status: 400 });
     }
     const isAlreadyMember = await GroupMember.findOne({ groupId, userId: targetUser._id });
     if (isAlreadyMember) {
