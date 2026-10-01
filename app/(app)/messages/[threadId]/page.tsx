@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { api, uploadFile, type Attachment } from "@/lib/api-client";
 import { Avatar } from "@/components/Avatar";
-import { AttachmentView } from "@/components/AttachmentView";
+import { AttachmentView, VoiceMessage } from "@/components/AttachmentView";
 import { useVoiceRecorder } from "@/lib/use-voice-recorder";
 import { isOnline, formatLastSeen } from "@/lib/presence";
 import { onKeyActivate } from "@/lib/a11y";
@@ -314,8 +314,10 @@ export default function DmThreadPage({ params }: { params: Promise<{ threadId: s
       {sendingAttachment && <div className="card-meta" style={{ marginTop: 4 }}>Uploading…</div>}
       {voice.error && <div style={{ color: "oklch(70% 0.15 25)", fontSize: 12, marginTop: 4 }}>{voice.error}</div>}
       {pendingVoiceUrl && (
-        <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 8 }}>
-          <audio src={pendingVoiceUrl} controls style={{ flex: 1 }} />
+        <div style={{ display: "flex", alignItems: "center", gap: 12, marginTop: 8, padding: "8px 12px", background: "var(--color-surface, rgba(255,255,255,0.05))", borderRadius: 8 }}>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <VoiceMessage src={pendingVoiceUrl} mine={false} />
+          </div>
           <button className="btn btn-primary" onClick={sendPendingVoice} style={{ whiteSpace: "nowrap" }}>Send</button>
           <button className="btn" onClick={discardPendingVoice}>Discard</button>
         </div>
