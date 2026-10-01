@@ -7,6 +7,7 @@ import GroupMember from "@/models/GroupMember";
 import GroupMessage from "@/models/GroupMessage";
 import User from "@/models/User";
 import { notifyMany } from "@/lib/notify";
+import { isGroupMember } from "@/lib/permissions";
 
 async function validateInvite(token: string) {
   const invite = await InviteLink.findOne({ token });
@@ -31,7 +32,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ token: 
   const session = await auth();
   let alreadyMember = false;
   if (session?.user) {
-    alreadyMember = !!(await GroupMember.findOne({ groupId: result.group._id, userId: session.user.id }));
+    alreadyMember = await isGroupMember(result.group._id.toString(), session.user.id, result.group.orgId?.toString() ?? null);
   }
 
   return NextResponse.json({
@@ -66,8 +67,8 @@ export async function POST(_req: Request, { params }: { params: Promise<{ token:
     return NextResponse.json({ error: "This invite was sent to a different email address." }, { status: 403 });
   }
 
-  const existingMembership = await GroupMember.findOne({ groupId: group._id, userId: session.user.id });
-  if (existingMembership) {
+  const isAlreadyMember = await isGroupMember(group._id.toString(), session.user.id, group.orgId?.toString() ?? null);
+  if (isAlreadyMember) {
     return NextResponse.json({ alreadyMember: true, group: { id: group._id, name: group.name } });
   }
 

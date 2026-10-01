@@ -6,7 +6,7 @@ import Group from "@/models/Group";
 import InviteLink from "@/models/InviteLink";
 import User from "@/models/User";
 import GroupMember from "@/models/GroupMember";
-import { isGroupAdmin } from "@/lib/permissions";
+import { isGroupAdmin, isGroupMember } from "@/lib/permissions";
 import { sendEmail } from "@/lib/email";
 import { groupInviteEmail } from "@/lib/email-templates";
 
@@ -49,11 +49,17 @@ export async function POST(req: Request, { params }: { params: Promise<{ groupId
       return NextResponse.json({ error: "email is required for email invites" }, { status: 400 });
     }
     const targetEmail = String(body.email).toLowerCase().trim();
+    if (session.user.email && targetEmail === session.user.email.toLowerCase().trim()) {
+      return NextResponse.json({ error: "You cannot invite yourself to a group" }, { status: 400 });
+    }
     const targetUser = await User.findOne({ email: targetEmail });
     if (!targetUser || targetUser.signupStatus !== "approved" || (group.orgId && (!targetUser.orgId || targetUser.orgId.toString() !== group.orgId.toString()))) {
       return NextResponse.json({ error: "This user doesn't exist in this organisation" }, { status: 400 });
     }
-    const isAlreadyMember = await GroupMember.findOne({ groupId, userId: targetUser._id });
+    if (targetUser._id.toString() === session.user.id) {
+      return NextResponse.json({ error: "You cannot invite yourself to a group" }, { status: 400 });
+    }
+    const isAlreadyMember = await isGroupMember(groupId, targetUser._id.toString(), group.orgId?.toString() ?? null);
     if (isAlreadyMember) {
       return NextResponse.json({ error: "This user is already a member of this group" }, { status: 400 });
     }

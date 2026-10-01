@@ -2,6 +2,7 @@
 
 import { useState, use as usePromise } from "react";
 import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 import { api } from "@/lib/api-client";
 import { onKeyActivate } from "@/lib/a11y";
 import { ErrorBanner } from "@/components/ErrorBanner";
@@ -11,6 +12,7 @@ type Invite = { token: string; type: "email" | "link"; email: string | null };
 export default function InvitePage({ params }: { params: Promise<{ groupId: string }> }) {
   const { groupId } = usePromise(params);
   const router = useRouter();
+  const { data: session } = useSession();
   const [email, setEmail] = useState("");
   const [linkInvite, setLinkInvite] = useState<Invite | null>(null);
   const [error, setError] = useState<unknown>(null);
@@ -19,8 +21,13 @@ export default function InvitePage({ params }: { params: Promise<{ groupId: stri
   async function sendEmailInvite(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
+    const targetEmail = email.trim().toLowerCase();
+    if (session?.user?.email && targetEmail === session.user.email.toLowerCase().trim()) {
+      setError(new Error("You cannot invite yourself to a group"));
+      return;
+    }
     try {
-      await api(`/api/groups/${groupId}/invites`, { method: "POST", body: JSON.stringify({ type: "email", email }) });
+      await api(`/api/groups/${groupId}/invites`, { method: "POST", body: JSON.stringify({ type: "email", email: targetEmail }) });
       setSent(true);
       setEmail("");
       setTimeout(() => setSent(false), 5000);
