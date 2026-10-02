@@ -142,21 +142,57 @@ export default function SettingsPage() {
         <div className="card elev-sm">
           <div className="card-title">Push notifications</div>
           {push.supported ? (
-            <label style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "8px 0", cursor: "pointer" }}>
-              <div>
-                <div style={{ fontSize: 13 }}>Notify this device</div>
-                <div style={{ fontSize: 11.5, color: "color-mix(in srgb, var(--color-text) 55%, transparent)" }}>
-                  Get a notification here even when TaskFlow isn&rsquo;t open — assignments, reviews, mentions, and messages.
+            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+              <label style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "8px 0", cursor: "pointer" }}>
+                <div>
+                  <div style={{ fontSize: 13 }}>Notify this device</div>
+                  <div style={{ fontSize: 11.5, color: "color-mix(in srgb, var(--color-text) 55%, transparent)" }}>
+                    Get a notification here even when TaskFlow isn&rsquo;t open — assignments, reviews, mentions, and messages.
+                  </div>
                 </div>
+                <input
+                  type="checkbox"
+                  checked={push.subscribed}
+                  disabled={push.loading}
+                  onChange={(e) => (e.target.checked ? push.subscribe() : push.unsubscribe())}
+                  style={{ width: "auto", accentColor: "var(--color-accent)", flex: "none" }}
+                />
+              </label>
+
+              {push.error && (
+                <div style={{ color: "oklch(70% 0.15 25)", fontSize: 12, lineHeight: 1.4 }}>
+                  {push.error}
+                </div>
+              )}
+
+              {push.subscribed && (
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", borderTop: "1px solid var(--color-divider)", paddingTop: 10 }}>
+                  <div style={{ fontSize: 12, color: "var(--color-accent-300)" }}>Push notifications active on this device.</div>
+                  <button
+                    type="button"
+                    className="btn btn-secondary"
+                    style={{ fontSize: 12, padding: "4px 10px" }}
+                    onClick={() => push.sendTest()}
+                  >
+                    Send test push
+                  </button>
+                </div>
+              )}
+            </div>
+          ) : push.isIOS && !push.isStandalone ? (
+            <div style={{ display: "flex", flexDirection: "column", gap: 8, padding: "6px 0" }}>
+              <div style={{ fontSize: 13, fontWeight: 600, color: "var(--color-accent-300)" }}>
+                Enable Push on iPhone / iPad:
               </div>
-              <input
-                type="checkbox"
-                checked={push.subscribed}
-                disabled={push.loading}
-                onChange={(e) => (e.target.checked ? push.subscribe() : push.unsubscribe())}
-                style={{ width: "auto", accentColor: "var(--color-accent)", flex: "none" }}
-              />
-            </label>
+              <div style={{ fontSize: 12, lineHeight: 1.5, color: "color-mix(in srgb, var(--color-text) 70%, transparent)" }}>
+                iOS requires web apps to be installed to the Home Screen for push notifications:
+              </div>
+              <ol style={{ fontSize: 12, lineHeight: 1.6, paddingLeft: 18, color: "color-mix(in srgb, var(--color-text) 75%, transparent)" }}>
+                <li>Tap the <strong>Share</strong> button in Safari (<span style={{ fontSize: 14 }}>⎕↑</span>).</li>
+                <li>Select <strong>&ldquo;Add to Home Screen&rdquo;</strong>.</li>
+                <li>Open TaskFlow from your Home Screen, return to Settings, and enable notifications here.</li>
+              </ol>
+            </div>
           ) : (
             <div className="card-meta">Push notifications aren&rsquo;t supported in this browser.</div>
           )}

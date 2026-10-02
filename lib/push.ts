@@ -17,7 +17,11 @@ export async function sendPush(userId: string, title: string, body: string, url?
       try {
         await webpush.sendNotification(
           { endpoint: sub.endpoint, keys: sub.keys },
-          JSON.stringify({ title, body, url })
+          JSON.stringify({ title, body, url }),
+          {
+            TTL: 86400, // 24h Time-To-Live required for mobile APNs delivery when locked/sleeping
+            urgency: "high", // High urgency for immediate mobile wake-up
+          }
         );
       } catch (err) {
         const statusCode = (err as { statusCode?: number }).statusCode;

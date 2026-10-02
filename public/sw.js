@@ -1,13 +1,24 @@
 self.addEventListener("push", (event) => {
-  const data = event.data ? event.data.json() : {};
-  event.waitUntil(
-    self.registration.showNotification(data.title || "TaskFlow", {
-      body: data.body || "",
-      icon: "/icon",
-      badge: "/icon",
-      data: { url: data.url || "/notifications" },
-    })
-  );
+  let data = {};
+  try {
+    data = event.data ? event.data.json() : {};
+  } catch (e) {
+    try {
+      data = { body: event.data ? event.data.text() : "" };
+    } catch {}
+  }
+
+  const title = data.title || "TaskFlow";
+  const options = {
+    body: data.body || "",
+    icon: "/icon",
+    badge: "/icon",
+    data: { url: data.url || "/notifications" },
+    tag: data.tag || `taskflow-${Date.now()}`,
+    renotify: true,
+  };
+
+  event.waitUntil(self.registration.showNotification(title, options));
 });
 
 self.addEventListener("notificationclick", (event) => {
