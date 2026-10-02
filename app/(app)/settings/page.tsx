@@ -12,8 +12,10 @@ type Me = { name: string; email: string; accountType: string; avatarUrl: string 
 const PERSONAL_PREFS = [
   "Task assigned or reassigned to you",
   "Task approved or rejected",
-  "New @mention",
+  "New @mention in a group",
   "New direct message",
+  "New group message",
+  "New message in task chat",
 ];
 
 // Org owners are auto-admin on every group their org creates — this notification never

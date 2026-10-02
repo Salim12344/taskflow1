@@ -4,7 +4,9 @@ import { auth } from "@/auth";
 import { connectDB } from "@/lib/db";
 import DMThread from "@/models/DMThread";
 import DMMessage from "@/models/DMMessage";
+import User from "@/models/User";
 import { getTypingUsers } from "@/lib/typing";
+import { notify } from "@/lib/notify";
 
 async function requireParticipant(threadId: string, userId: string) {
   const thread = await DMThread.findById(threadId);
@@ -71,6 +73,25 @@ export async function POST(req: Request, { params }: { params: Promise<{ threadI
   });
   thread.lastMessageAt = new Date();
   await thread.save();
+
+  // Notify the other participant(s) — everyone in the thread except the sender.
+  const recipientIds = (thread.participantIds as Types.ObjectId[])
+    .map((p) => p.toString())
+    .filter((id) => id !== session.user.id);
+
+  if (recipientIds.length > 0) {
+    const sender = await User.findById(session.user.id, "name").lean();
+    const senderName = (sender as unknown as { name: string } | null)?.name ?? "Someone";
+    const preview = text?.trim() ? (text.trim().length > 60 ? text.trim().slice(0, 60) + "…" : text.trim()) : "📎 Attachment";
+    await Promise.all(
+      recipientIds.map((recipientId) =>
+        notify(recipientId, "dm", `${senderName}: ${preview}`, {
+          description: preview,
+          payload: { threadId },
+        })
+      )
+    );
+  }
 
   return NextResponse.json({ message }, { status: 201 });
 }

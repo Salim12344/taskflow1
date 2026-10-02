@@ -1,8 +1,10 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import TaskChatMessage from "@/models/TaskChatMessage";
+import User from "@/models/User";
 import { isGroupAdmin, isGroupMember, canManageTask } from "@/lib/permissions";
 import { loadTaskContext } from "@/lib/task-context";
+import { notify } from "@/lib/notify";
 
 /**
  * Private to the assignee and whoever currently manages the task (the creator, or the
@@ -89,6 +91,26 @@ export async function POST(req: Request, { params }: { params: Promise<{ taskId:
     replyTo,
     attachments: hasAttachment ? attachments : [],
   });
+
+  // Notify the other party in the task chat thread.
+  // The two participants are the assignee and the task manager (createdBy or delegated reviewer).
+  const { task } = ctx;
+  const assigneeId = task.assignedTo?.toString() ?? null;
+  const managerId = task.reviewerId?.toString() ?? task.createdBy?.toString() ?? null;
+  const otherParticipantId = session.user.id === assigneeId ? managerId : assigneeId;
+
+  if (otherParticipantId && otherParticipantId !== session.user.id) {
+    const sender = await User.findById(session.user.id, "name").lean();
+    const senderName = (sender as unknown as { name: string } | null)?.name ?? "Someone";
+    const taskTitle = task.title ? (task.title.length > 40 ? task.title.slice(0, 40) + "…" : task.title) : "a task";
+    const preview = text?.trim()
+      ? text.trim().length > 50 ? text.trim().slice(0, 50) + "…" : text.trim()
+      : "📎 Attachment";
+    await notify(otherParticipantId, "task_chat", `${senderName} in "${taskTitle}": ${preview}`, {
+      description: preview,
+      payload: { taskId },
+    });
+  }
 
   return NextResponse.json({ message }, { status: 201 });
 }

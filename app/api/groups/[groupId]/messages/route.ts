@@ -87,13 +87,33 @@ export async function POST(req: Request, { params }: { params: Promise<{ groupId
   await message.populate("senderId", "name avatarUrl");
   await message.populate("mentions", "name");
 
+  const group = await Group.findById(groupId);
+
   if (validMentions.length > 0) {
-    const group = await Group.findById(groupId);
     await notifyMany(
       validMentions,
       "mention",
       `${session.user.name} mentioned you in ${group?.name ?? "a group"}`,
       { description: text?.trim() || "🎤 Voice note", payload: { groupId, messageId: message._id } }
+    );
+  }
+
+  // Notify all other group members about the new message (excluding already-mentioned members and the sender).
+  const allMembers = await GroupMember.find({ groupId }, "userId").lean();
+  const mentionSet = new Set(validMentions);
+  const broadcastIds = allMembers
+    .map((m: { userId: { toString(): string } }) => m.userId.toString())
+    .filter((id: string) => id !== session.user.id && !mentionSet.has(id));
+
+  if (broadcastIds.length > 0) {
+    const preview = text?.trim()
+      ? text.trim().length > 60 ? text.trim().slice(0, 60) + "…" : text.trim()
+      : "📎 Attachment";
+    await notifyMany(
+      broadcastIds,
+      "group_message",
+      `${session.user.name} in ${group?.name ?? "a group"}: ${preview}`,
+      { description: preview, payload: { groupId, messageId: message._id } }
     );
   }
 

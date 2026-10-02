@@ -2,6 +2,7 @@ import Notification from "@/models/Notification";
 import { sendPush } from "@/lib/push";
 
 function pushUrlFor(payload?: Record<string, unknown>) {
+  if (payload?.threadId) return `/messages/${payload.threadId}`;
   if (payload?.taskId) return `/tasks/${payload.taskId}`;
   if (payload?.groupId) return `/groups/${payload.groupId}`;
   return "/notifications";
