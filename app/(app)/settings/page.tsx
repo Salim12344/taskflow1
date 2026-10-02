@@ -23,7 +23,7 @@ const PERSONAL_PREFS = [
 const GROUP_JOINED_PREF = "Added to a group";
 
 const ADMIN_ONLY_PREFS = [
-  "Task submitted for review (you're an admin)",
+  "Task submitted for review",
 ];
 
 export default function SettingsPage() {
@@ -201,7 +201,7 @@ export default function SettingsPage() {
         </div>
 
         <div className="card elev-sm">
-          <div className="card-title">Email notifications</div>
+          <div className="card-title">Notifications</div>
           {visiblePrefs.map((label, i) => (
             <label key={label} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "8px 0", borderBottom: "1px solid var(--color-divider)", cursor: "pointer" }}>
               <span style={{ fontSize: 13 }}>{label}</span>
