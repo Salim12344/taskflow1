@@ -117,7 +117,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ taskId
             createdBy: task.createdBy,
             deadline: nextDueDate(task.deadline, task.recurrence as "daily" | "weekly" | "monthly"),
             recurrence: task.recurrence,
-            subtasks: task.subtasks.map((s: { text: string }) => ({ text: s.text, done: false })),
+            subtasks: [],
             status: "todo",
           });
         }
@@ -177,34 +177,6 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ taskId
   return NextResponse.json({ task });
 }
 
-export async function DELETE(_req: Request, { params }: { params: Promise<{ taskId: string }> }) {
-  const session = await auth();
-  if (!session?.user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-
-  const { taskId } = await params;
-  await connectDB();
-  const ctx = await loadTaskContext(taskId);
-  if (!ctx?.project) return NextResponse.json({ error: "Not found" }, { status: 404 });
-  const { task, project, group } = ctx;
-
-  if (task.status === "done") {
-    return NextResponse.json({ error: "Approved tasks can't be deleted" }, { status: 400 });
-  }
-
-  const orgId = group?.orgId?.toString() ?? null;
-  const groupId = project.groupId.toString();
-  // A creator who's since left the group (or been demoted) shouldn't keep a standing right to
-  // delete tasks there — the fallback only holds while they're still actually an admin.
-  const isCreator = task.createdBy.toString() === session.user.id && (await isGroupAdmin(groupId, session.user.id, orgId));
-  const canManage = await canManageTask(task.reviewerId?.toString() ?? null, orgId, session.user.id, isCreator);
-  if (!canManage) {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-  }
-
-  task.deletedAt = new Date();
-  const conflict = await saveTaskOrConflict(task);
-  if (conflict) return conflict;
-  await logActivity(group?._id?.toString() ?? "", session.user.id, "task_deleted", "task", task._id.toString(), `${session.user.name} deleted "${task.title}"`);
-
-  return NextResponse.json({ ok: true });
+export async function DELETE() {
+  return NextResponse.json({ error: "Tasks cannot be deleted" }, { status: 403 });
 }

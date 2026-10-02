@@ -16,7 +16,7 @@ import { ErrorBanner } from "@/components/ErrorBanner";
 
 type Group = { _id: string; name: string };
 type Project = { _id: string; name: string; description: string; status: string };
-type Member = { _id: string; userId: { _id: string; name: string; email: string; avatarUrl: string | null; lastActiveAt: string | null }; role: "admin" | "member" };
+type Member = { _id: string; userId: { _id: string; name: string; email: string; avatarUrl: string | null; lastActiveAt: string | null }; role: "admin" | "member"; canDeleteGroup?: boolean };
 type ReadReceipt = { userId: { _id: string; name: string; avatarUrl: string | null }; readAt: string };
 type ReplyTo = { messageId: string; text: string; senderName: string };
 type ActivityEntry = { _id: string; actorId: { name: string } | null; meta: { text: string }; createdAt: string };
@@ -69,6 +69,7 @@ export default function GroupPage({ params }: { params: Promise<{ groupId: strin
   const [sendingAttachment, setSendingAttachment] = useState(false);
   const [confirmRemove, setConfirmRemove] = useState<Member | null>(null);
   const [confirmLeave, setConfirmLeave] = useState(false);
+  const [confirmDeleteGroup, setConfirmDeleteGroup] = useState(false);
   const voice = useVoiceRecorder();
   // null = first load not yet complete; number = unread count captured from first API response.
   const initialUnreadRef = useRef<number | null>(null);
@@ -148,6 +149,7 @@ export default function GroupPage({ params }: { params: Promise<{ groupId: strin
   // as an explicit member — "leave" doesn't apply to them (server rejects it either way).
   const isOrgAccount = session?.user?.accountType === "organization";
   const isAdmin = isOrgAccount || me?.role === "admin";
+  const canDelete = isOrgAccount || !!me?.canDeleteGroup;
   const canLeave = !!me && !isOrgAccount;
 
   async function createProject(e: React.FormEvent) {
@@ -176,6 +178,15 @@ export default function GroupPage({ params }: { params: Promise<{ groupId: strin
     }
   }
 
+  async function toggleDeletePerm(userId: string, canDeleteGroup: boolean) {
+    try {
+      await api(`/api/groups/${groupId}/members/${userId}`, { method: "PATCH", body: JSON.stringify({ canDeleteGroup }) });
+      loadAll();
+    } catch (e) {
+      setError(e);
+    }
+  }
+
   async function removeMember(m: Member) {
     setConfirmRemove(null);
     try {
@@ -190,6 +201,16 @@ export default function GroupPage({ params }: { params: Promise<{ groupId: strin
     setConfirmLeave(false);
     try {
       await api(`/api/groups/${groupId}/leave`, { method: "POST" });
+      router.push("/dashboard");
+    } catch (e) {
+      setError(e);
+    }
+  }
+
+  async function deleteGroup() {
+    setConfirmDeleteGroup(false);
+    try {
+      await api(`/api/groups/${groupId}`, { method: "DELETE" });
       router.push("/dashboard");
     } catch (e) {
       setError(e);
@@ -298,6 +319,7 @@ export default function GroupPage({ params }: { params: Promise<{ groupId: strin
           <div style={{ display: "flex", gap: 8 }}>
             {isAdmin && <button className="btn btn-primary" onClick={() => router.push(`/groups/${groupId}/invite`)}>Invite people</button>}
             {canLeave && <button className="btn btn-secondary" onClick={() => setConfirmLeave(true)}>Leave group</button>}
+            {canDelete && <button className="btn btn-secondary" style={{ color: "var(--color-accent-300)" }} onClick={() => setConfirmDeleteGroup(true)}>Delete group</button>}
           </div>
         </div>
         <ErrorBanner error={error} onRetry={tab === "chat" ? loadMessages : loadAll} style={{ margin: "8px 0" }} />
@@ -574,9 +596,28 @@ export default function GroupPage({ params }: { params: Promise<{ groupId: strin
                         </div>
                       </div>
                     </td>
-                    <td><span className={m.role === "admin" ? "tag tag-accent" : "tag tag-neutral"}>{m.role}</span></td>
+                    <td>
+                      <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                        <span className={m.role === "admin" ? "tag tag-accent" : "tag tag-neutral"}>{m.role}</span>
+                        {m.role === "admin" && m.canDeleteGroup && (
+                          <span className="tag" style={{ background: "color-mix(in srgb, var(--color-accent) 15%, transparent)", color: "var(--color-accent-300)" }}>
+                            Can delete
+                          </span>
+                        )}
+                      </div>
+                    </td>
                     <td style={{ textAlign: "right" }}>
-                      <div style={{ display: "flex", gap: 6, justifyContent: "flex-end" }}>
+                      <div style={{ display: "flex", gap: 6, justifyContent: "flex-end", flexWrap: "wrap" }}>
+                        {isOrgAccount && m.role === "admin" && !isMe && (
+                          <button
+                            className="btn btn-secondary"
+                            style={{ padding: "4px 8px", fontSize: 12 }}
+                            onClick={() => toggleDeletePerm(m.userId._id, !m.canDeleteGroup)}
+                            title={m.canDeleteGroup ? "Revoke group deletion permission" : "Allow admin to delete this group"}
+                          >
+                            {m.canDeleteGroup ? "Revoke delete" : "Allow delete"}
+                          </button>
+                        )}
                         {isAdmin && !isMe && (
                           <>
                             <button className="btn btn-secondary" style={{ padding: "4px 10px", fontSize: 12 }} onClick={() => setRole(m.userId._id, m.role === "admin" ? "member" : "admin")}>
@@ -664,6 +705,17 @@ export default function GroupPage({ params }: { params: Promise<{ groupId: strin
           danger
           onConfirm={leaveGroup}
           onCancel={() => setConfirmLeave(false)}
+        />
+      )}
+
+      {confirmDeleteGroup && (
+        <ConfirmDialog
+          title="Delete group"
+          description={`"${group?.name ?? "This group"}" and all its projects, tasks, and messages will be permanently deleted. This can't be undone.`}
+          confirmLabel="Delete group"
+          danger
+          onConfirm={deleteGroup}
+          onCancel={() => setConfirmDeleteGroup(false)}
         />
       )}
     </div>

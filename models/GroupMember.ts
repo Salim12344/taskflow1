@@ -5,6 +5,8 @@ const GroupMemberSchema = new Schema({
   userId: { type: Schema.Types.ObjectId, ref: "User", required: true },
   role: { type: String, enum: ["admin", "member"], required: true },
   joinedAt: { type: Date, default: Date.now },
+  // Extra permission: org owner can grant specific admins the right to delete this group.
+  canDeleteGroup: { type: Boolean, default: false },
 });
 
 GroupMemberSchema.index({ groupId: 1, userId: 1 }, { unique: true });

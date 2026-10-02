@@ -37,7 +37,19 @@ export async function DELETE(_req: Request, { params }: { params: Promise<{ grou
   const group = await Group.findOne({ _id: groupId, deletedAt: null });
   if (!group) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
-  if (!(await isGroupAdmin(groupId, session.user.id, group.orgId?.toString() ?? null))) {
+  const orgId = group.orgId?.toString() ?? null;
+  const isOrgOwner = session.user.accountType === "organization";
+
+  if (!isOrgOwner) {
+    // Non-org-owner admins can only delete if the org owner has explicitly granted them canDeleteGroup.
+    const member = await GroupMember.findOne({ groupId, userId: session.user.id });
+    if (!member?.canDeleteGroup) {
+      return NextResponse.json({ error: "Only the organisation owner or an admin with delete permission can delete this group" }, { status: 403 });
+    }
+  }
+
+  // Sanity-check: still must be a member/admin of the group (org owner is implicit).
+  if (!isOrgOwner && !(await isGroupAdmin(groupId, session.user.id, orgId))) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 

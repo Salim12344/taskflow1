@@ -57,7 +57,6 @@ export default function TaskPage({ params }: { params: Promise<{ taskId: string 
   const [composer, setComposer] = useState("");
   const [replyingTo, setReplyingTo] = useState<{ _id: string; text: string; senderName: string } | null>(null);
   const [sendingAttachment, setSendingAttachment] = useState(false);
-  const [confirmDelete, setConfirmDelete] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [reassigning, setReassigning] = useState(false);
   const voice = useVoiceRecorder();
@@ -125,8 +124,6 @@ export default function TaskPage({ params }: { params: Promise<{ taskId: string 
   // org owner, who always keeps an emergency fallback to act on the task).
   const isDesignatedManager = !!task?.reviewerId && task.reviewerId === userId;
   const canManage = task?.reviewerId ? isDesignatedManager || isOrgAccount : isCreator || isOrgAccount;
-  // Once approved, a task is a closed record — nobody can delete it, manager or not.
-  const canDelete = canManage && task?.status !== "done";
   // Handing a task off reassigns who's accountable for it — narrower than canManage, so even
   // the org owner's emergency override doesn't extend to it, only the creator/current delegate.
   const canDelegate = isDesignatedManager || (!task?.reviewerId && isCreator);
@@ -157,25 +154,6 @@ export default function TaskPage({ params }: { params: Promise<{ taskId: string 
       setError(e);
     } finally {
       setReassigning(false);
-    }
-  }
-
-  async function toggleSubtask(index: number, done: boolean) {
-    try {
-      await api(`/api/tasks/${taskId}/subtasks`, { method: "PATCH", body: JSON.stringify({ index, done }) });
-      load();
-    } catch (e) {
-      setError(e);
-    }
-  }
-
-  async function deleteTask() {
-    setConfirmDelete(false);
-    try {
-      await api(`/api/tasks/${taskId}`, { method: "DELETE" });
-      router.push(`/projects/${task?.projectId}`);
-    } catch (e) {
-      setError(e);
     }
   }
 
@@ -360,22 +338,6 @@ export default function TaskPage({ params }: { params: Promise<{ taskId: string 
             </div>
           )}
 
-          {task.subtasks.length > 0 && (
-            <div style={{ marginTop: 14 }}>
-              <div style={{ fontSize: 12, color: "color-mix(in srgb, var(--color-text) 60%, transparent)", marginBottom: 6 }}>
-                Subtasks ({task.subtasks.filter((s) => s.done).length}/{task.subtasks.length})
-              </div>
-              <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-                {task.subtasks.map((s, i) => (
-                  <label key={i} style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13.5 }}>
-                    <input type="checkbox" checked={s.done} onChange={(e) => toggleSubtask(i, e.target.checked)} disabled={!isAssignee && !isAdmin} />
-                    <span style={{ textDecoration: s.done ? "line-through" : "none", opacity: s.done ? 0.6 : 1 }}>{s.text}</span>
-                  </label>
-                ))}
-              </div>
-            </div>
-          )}
-
           {task.rejectionHistory.length > 0 && (
             <div style={{ marginTop: 14 }}>
               <div style={{ fontSize: 12, color: "color-mix(in srgb, var(--color-text) 60%, transparent)", marginBottom: 6 }}>Rejection history</div>
@@ -398,7 +360,6 @@ export default function TaskPage({ params }: { params: Promise<{ taskId: string 
                 <button className="btn btn-secondary" style={{ color: "var(--color-accent-300)" }} disabled={submitting} onClick={() => setShowReject((s) => !s)}>Reject</button>
               </>
             )}
-            {canDelete && <button className="btn btn-secondary" style={{ color: "var(--color-accent-300)" }} onClick={() => setConfirmDelete(true)}>Delete task</button>}
           </div>
 
           {showReject && (
@@ -540,17 +501,6 @@ export default function TaskPage({ params }: { params: Promise<{ taskId: string 
           {chatCanWrite && voice.error && <div style={{ color: "oklch(70% 0.15 25)", fontSize: 12, marginTop: 4 }}>{voice.error}</div>}
         </div>
       </div>
-
-      {confirmDelete && (
-        <ConfirmDialog
-          title="Delete task"
-          description={`"${task.title}" and its full history will be gone for good. This can't be undone.`}
-          confirmLabel="Delete"
-          danger
-          onConfirm={deleteTask}
-          onCancel={() => setConfirmDelete(false)}
-        />
-      )}
     </div>
   );
 }

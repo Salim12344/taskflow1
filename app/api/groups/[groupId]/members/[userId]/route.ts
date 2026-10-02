@@ -133,8 +133,13 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ groupI
   if (!session?.user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const { groupId, userId } = await params;
-  const { role } = await req.json();
-  if (!["admin", "member"].includes(role)) {
+  const body = await req.json();
+  const { role, canDeleteGroup } = body;
+
+  if (role === undefined && canDeleteGroup === undefined) {
+    return NextResponse.json({ error: "No fields to update" }, { status: 400 });
+  }
+  if (role !== undefined && !["admin", "member"].includes(role)) {
     return NextResponse.json({ error: "role must be 'admin' or 'member'" }, { status: 400 });
   }
 
@@ -142,6 +147,8 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ groupI
   const group = await Group.findOne({ _id: groupId, deletedAt: null });
   if (!group) return NextResponse.json({ error: "Not found" }, { status: 404 });
   const orgId = group.orgId?.toString() ?? null;
+  const isOrgOwner = session.user.accountType === "organization";
+
   if (!(await isGroupAdmin(groupId, session.user.id, orgId))) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
@@ -149,76 +156,93 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ groupI
   const target = await GroupMember.findOne({ groupId, userId });
   if (!target) return NextResponse.json({ error: "Not a member" }, { status: 404 });
 
-  if (role === "member" && (await isOrgOwnerOfGroup(orgId, userId))) {
-    return NextResponse.json({ error: "The organization owner can't be demoted in a group they own" }, { status: 400 });
+  // Only the organization owner can grant/revoke group deletion permissions to other admins.
+  if (typeof canDeleteGroup === "boolean") {
+    if (!isOrgOwner) {
+      return NextResponse.json(
+        { error: "Only the organization owner can grant or revoke group deletion permissions" },
+        { status: 403 }
+      );
+    }
+    if (target.role !== "admin" && (!role || role !== "admin")) {
+      return NextResponse.json(
+        { error: "Only admins can be granted group deletion permission" },
+        { status: 400 }
+      );
+    }
+    target.canDeleteGroup = canDeleteGroup;
   }
 
-  if (target.role === "admin" && role === "member") {
-    // Pending-review block only applies to self-demotion (spec: admin stepping themselves down).
-    if (userId === session.user.id) {
-      const projectIds = await projectIdsFor(groupId);
-      const pending = await countPendingReviewTasks(projectIds);
-      if (pending > 0) {
+  if (role !== undefined && role !== target.role) {
+    if (role === "member" && (await isOrgOwnerOfGroup(orgId, userId))) {
+      return NextResponse.json({ error: "The organization owner can't be demoted in a group they own" }, { status: 400 });
+    }
+
+    if (target.role === "admin" && role === "member") {
+      // Pending-review block only applies to self-demotion (spec: admin stepping themselves down).
+      if (userId === session.user.id) {
+        const projectIds = await projectIdsFor(groupId);
+        const pending = await countPendingReviewTasks(projectIds);
+        if (pending > 0) {
+          return NextResponse.json(
+            {
+              error: `There are ${pending} tasks pending review in this group. Review or reassign them before you can leave or step down.`,
+            },
+            { status: 409 }
+          );
+        }
+      }
+    }
+
+    // Admins can never hold an assigned task — promotion is blocked (not auto-unassigned) until
+    // they finish or get reassigned off whatever they currently have.
+    if (target.role === "member" && role === "admin") {
+      const { total, pendingReview } = await activeTaskCounts(groupId, userId);
+      if (total > 0) {
+        const detail = pendingReview > 0 ? `, ${pendingReview} pending review` : "";
         return NextResponse.json(
           {
-            error: `There are ${pending} tasks pending review in this group. Review or reassign them before you can leave or step down.`,
+            error: `This member has ${total} task(s) pending completion${detail}. Reassign or have them finish before promoting.`,
           },
           { status: 409 }
         );
       }
     }
-  }
 
-  // Admins can never hold an assigned task — promotion is blocked (not auto-unassigned) until
-  // they finish or get reassigned off whatever they currently have.
-  if (target.role === "member" && role === "admin") {
-    const { total, pendingReview } = await activeTaskCounts(groupId, userId);
-    if (total > 0) {
-      // Not "your review" — whoever reviews these may be a different admin if review's been delegated.
-      const detail = pendingReview > 0 ? `, ${pendingReview} pending review` : "";
-      return NextResponse.json(
-        {
-          error: `This member has ${total} task(s) pending completion${detail}. Reassign or have them finish before promoting.`,
-        },
-        { status: 409 }
-      );
-    }
-  }
-
-  const oldRole = target.role;
-  if (oldRole === "admin" && role === "member") {
-    // Guard the admin-count check and the role flip in one transaction — otherwise two
-    // concurrent demotions can each see "another admin" (each other) and both proceed,
-    // leaving the group with zero admins.
-    const dbSession = await mongoose.startSession();
-    try {
-      await dbSession.withTransaction(async () => {
-        if (!(await hasAnotherAdmin(groupId, orgId, userId, dbSession))) {
-          throw new Error("NO_OTHER_ADMIN");
+    const oldRole = target.role;
+    if (oldRole === "admin" && role === "member") {
+      target.canDeleteGroup = false;
+      const dbSession = await mongoose.startSession();
+      try {
+        await dbSession.withTransaction(async () => {
+          if (!(await hasAnotherAdmin(groupId, orgId, userId, dbSession))) {
+            throw new Error("NO_OTHER_ADMIN");
+          }
+          await GroupMember.updateOne({ _id: target._id }, { $set: { role, canDeleteGroup: false } }).session(dbSession);
+        });
+      } catch (e) {
+        if (e instanceof Error && e.message === "NO_OTHER_ADMIN") {
+          return NextResponse.json(
+            { error: "Promote another member to admin before leaving/stepping down" },
+            { status: 409 }
+          );
         }
-        await GroupMember.updateOne({ _id: target._id }, { $set: { role } }).session(dbSession);
-      });
-    } catch (e) {
-      if (e instanceof Error && e.message === "NO_OTHER_ADMIN") {
-        return NextResponse.json(
-          { error: "Promote another member to admin before leaving/stepping down" },
-          { status: 409 }
-        );
+        throw e;
+      } finally {
+        await dbSession.endSession();
       }
-      throw e;
-    } finally {
-      await dbSession.endSession();
+      target.role = role;
+      await clearDelegationsFor(groupId, userId);
+    } else {
+      target.role = role;
+      await target.save();
     }
-    target.role = role;
-    await clearDelegationsFor(groupId, userId);
-  } else {
-    target.role = role;
-    await target.save();
-  }
-  if (oldRole !== role) {
+
     const targetUser = await User.findById(userId, "name");
     const verb = role === "admin" ? "promoted" : "demoted";
     await logActivity(groupId, session.user.id, `member_${verb}`, "user", userId, `${session.user.name} ${verb} ${targetUser?.name ?? "a member"}`);
+  } else {
+    await target.save();
   }
 
   return NextResponse.json({ member: target });
