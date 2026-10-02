@@ -49,8 +49,8 @@ const FEATURES = [
 ];
 
 const STEPS = [
-  { n: "01", title: "Create a group", desc: "Individuals and organizations can both spin up a group in seconds. You're the admin from the start.", color: "var(--color-blue)" },
-  { n: "02", title: "Invite your people", desc: "Send email invites or drop a link in your existing chat — people join as members, no public browsing required.", color: "var(--color-teal)" },
+  { n: "01", title: "Register your organization", desc: "Create your organization workspace with your business registration number in seconds. You're the owner from day one.", color: "var(--color-blue)" },
+  { n: "02", title: "Invite your team", desc: "Send direct email invites or approve pending employee signups — strictly scoped within your organization.", color: "var(--color-teal)" },
   { n: "03", title: "Assign & track", desc: "Spin up projects, hand out tasks, and watch them move from To do to Done with a review step admins control.", color: "var(--color-amber)" },
 ];
 
@@ -62,9 +62,9 @@ const STATS = [
 ];
 
 const AUDIENCES = [
-  { title: "Work & product teams", desc: "Marketing squads, agencies, and departments running multiple projects with real accountability." },
-  { title: "Research & project groups", desc: "Coordinate research tasks, shared deliverables, and discussions without losing context in a scrolling group chat." },
-  { title: "Operations & departments", desc: "Assign responsibilities, track milestones, and ensure admin-reviewed completion across every deliverable." },
+  { title: "Corporate & enterprise teams", desc: "Agencies, departments, and fast-growing companies running multiple client and internal projects." },
+  { title: "Project & technical squads", desc: "Coordinate research tasks, deliverables, and discussions without losing context in a scrolling chat." },
+  { title: "Operations & departments", desc: "Manage employee onboarding, review completed work, and maintain strict access control across groups." },
 ];
 
 export default function HomePage() {
@@ -208,8 +208,8 @@ export default function HomePage() {
         {/* Who it's for */}
         <section style={{ padding: "0 clamp(16px, 5vw, 40px) 88px", maxWidth: 1000, margin: "0 auto" }}>
           <div style={{ textAlign: "center", marginBottom: 36 }}>
-            <h2 style={{ fontSize: 24, marginBottom: 8 }}>Made for any kind of group</h2>
-            <p style={{ fontSize: 14, color: "color-mix(in srgb, var(--color-text) 60%, transparent)" }}>If you coordinate people and tasks, TaskFlow fits.</p>
+            <h2 style={{ fontSize: 24, marginBottom: 8 }}>Made for modern organizations</h2>
+            <p style={{ fontSize: 14, color: "color-mix(in srgb, var(--color-text) 60%, transparent)" }}>Built for businesses and teams that require structured governance, accountability, and communication.</p>
           </div>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: 18 }}>
             {AUDIENCES.map((a) => (
