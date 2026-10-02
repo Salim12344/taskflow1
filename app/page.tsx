@@ -62,9 +62,9 @@ const STATS = [
 ];
 
 const AUDIENCES = [
-  { title: "Work teams", desc: "Marketing squads, agencies, and departments running multiple projects with real accountability." },
-  { title: "Trading & investment groups", desc: "Coordinate research tasks and calls without losing context in a scrolling group chat." },
-  { title: "Families & households", desc: "Errands, chores, and shared responsibilities — assigned, tracked, and actually followed up on." },
+  { title: "Work & product teams", desc: "Marketing squads, agencies, and departments running multiple projects with real accountability." },
+  { title: "Research & project groups", desc: "Coordinate research tasks, shared deliverables, and discussions without losing context in a scrolling group chat." },
+  { title: "Operations & departments", desc: "Assign responsibilities, track milestones, and ensure admin-reviewed completion across every deliverable." },
 ];
 
 export default function HomePage() {
@@ -190,7 +190,7 @@ export default function HomePage() {
         <section style={{ padding: "0 clamp(16px, 5vw, 40px) 88px", maxWidth: 1100, margin: "0 auto" }}>
           <div style={{ textAlign: "center", marginBottom: 36 }}>
             <h2 style={{ fontSize: 24, marginBottom: 8 }}>Everything a group needs</h2>
-            <p style={{ fontSize: 14, color: "color-mix(in srgb, var(--color-text) 60%, transparent)" }}>Built for teams, families, trading groups, and everything in between.</p>
+            <p style={{ fontSize: 14, color: "color-mix(in srgb, var(--color-text) 60%, transparent)" }}>Built for project squads, departments, organizations, and fast-moving teams.</p>
           </div>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: 18 }}>
             {FEATURES.map((f) => (
